@@ -263,7 +263,7 @@ public final class MainActivity extends Activity {
         if (performanceStatus != null) {
             performanceStatus.setText("Richiesto: " + PerformancePolicy.name(budget.requestedProfile)
                     + "  →  Effettivo: " + PerformancePolicy.name(budget.effectiveProfile)
-                    + " · " + budget.targetFps + " FPS max anteprima\\n" + budget.reason);
+                    + " · " + budget.targetFps + " FPS max anteprima\n" + budget.reason);
         }
         if (performanceDiagnostics != null && performanceSnapshot != null) {
             performanceDiagnostics.setText(performanceSnapshot.describe());

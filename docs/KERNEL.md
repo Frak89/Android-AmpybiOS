@@ -27,3 +27,18 @@ The script inspects the upstream release manifest, checks tag/codename/project a
 **An optional clone alone does not alter AmpybiOS ROM performance.** Real kernel optimizations would require the corresponding kernel source, reproducible builds, ABI/module compatibility, SELinux and security tests, and measurements of frame timing, heat, battery and memory. Do not flash image or modules directly from this repository.
 
 To return to upstream-only mode, remove only the generated local-manifest XML (after confirming its contents), then `repo sync` again. Upstream release signing, custom AmpybiOS signing and A/B OTA integration are separate tasks.
+
+## Source kernel build (separate from prebuilts)
+
+`scripts/prepare_kernel_sources.sh <destination>` clones the **actual source**
+repository for the Pixel 7 Pro/pantah kernel from the upstream GrapheneOS GitLab.
+This is separate from the owner's mirror of compiled `Image.lz4` and `.ko`
+artifacts. Building with `KLEAF_REPO_MANIFEST=aosp_manifest.xml
+./build_pantah.sh --lto=full` produces *unverified* developer kernel outputs.
+The script intentionally never copies those outputs into the ROM checkout:
+source commit, OS release, vendor modules, boot validation, security and battery
+regression tests must match before such integration.
+
+For non-invasive on-device measurements use
+`scripts/benchmark_cheetah.sh /path/to/results` with USB debugging on a real
+Pixel 7 Pro and `dev.ampybios.core` installed. See [PERFORMANCE.md](PERFORMANCE.md).

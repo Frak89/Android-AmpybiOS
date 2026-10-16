@@ -28,3 +28,7 @@ __pycache__/
 .gradle/
 local.properties
 .DS_Store
+
+# Device measurements / locally cloned kernel source
+benchmarks/
+kernel_pixel_6.1/

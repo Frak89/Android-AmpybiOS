@@ -53,3 +53,19 @@ Original SVG examples can be rasterized with a trusted, offline SVG editor befor
 Never commit signing keys, unlocked firmware, API tokens or root binaries. Updater and signature keys must be configured for an independently hosted AmpyOTA service; **never point a derivative build at the official GrapheneOS update server**. See [security](docs/SECURITY.md), [upstream](docs/UPSTREAM.md) and [roadmap](docs/ROADMAP.md).
 
 Current upstream source tag target: **2026100600** (checked on 2026-10-16; change only after verifying the newest stable `cheetah` release).
+
+## AmpyKernel Performance Lab (development)
+
+AmpyCore now contains pure-Java adaptive **Eco / Balanced / Fusion Extreme**
+preview budgets and a foreground thermal, battery, RAM and window-frame monitor.
+These are **app-scoped rendering limits**, not kernel governor changes.
+See [Performance Lab](docs/PERFORMANCE.md).
+
+For the actual Pantah kernel sources (separate from precompiled mirror):
+```bash
+bash scripts/prepare_kernel_sources.sh ~/src/kernel_pixel_6.1
+```
+To gather non-privileged baseline measurements on an attached Pixel 7 Pro:
+```bash
+bash scripts/benchmark_cheetah.sh ~/benchmarks/pixel7pro-baseline
+```
