@@ -1,0 +1,11 @@
+// AmpyCore prototype — unprivileged Android app on the product partition.
+// SDK-only APIs. No root, signature permissions or system UID.
+android_app {
+    name: "AmpyCore",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    asset_dirs: ["assets"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "current",
+    product_specific: true,
+}
