@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "id": "minimal",
+  "label": "minimal",
+  "mode": "dark",
+  "colors": {
+    "background": "#101319",
+    "surface": "#151929",
+    "foreground": "#EBF6FF",
+    "accent": "#A6B7C9",
+    "secondary": "#53657B",
+    "radar": "#53657B"
+  },
+  "corner_radii_dp": [
+    8,
+    8,
+    8,
+    8
+  ],
+  "effects": {
+    "organic_morph": false,
+    "radar_border": false,
+    "radar_speed_dps": 0,
+    "glow_alpha": 0,
+    "glitch_on_rotate": false,
+    "reduced_motion": true
+  },
+  "transition_ms": 280,
+  "scope": [
+    "ampycore",
+    "ampycam",
+    "ampyraw",
+    "ampylauncher"
+  ]
+}

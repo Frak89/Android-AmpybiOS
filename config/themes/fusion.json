@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "id": "fusion",
+  "label": "fusion",
+  "mode": "dark",
+  "colors": {
+    "background": "#071222",
+    "surface": "#151929",
+    "foreground": "#EBF6FF",
+    "accent": "#13DFF9",
+    "secondary": "#8638E8",
+    "radar": "#8638E8"
+  },
+  "corner_radii_dp": [
+    30,
+    10,
+    30,
+    10
+  ],
+  "effects": {
+    "organic_morph": true,
+    "radar_border": true,
+    "radar_speed_dps": 100,
+    "glow_alpha": 0.4,
+    "glitch_on_rotate": false,
+    "reduced_motion": false
+  },
+  "transition_ms": 280,
+  "scope": [
+    "ampycore",
+    "ampycam",
+    "ampyraw",
+    "ampylauncher"
+  ]
+}

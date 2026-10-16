@@ -1,0 +1,21 @@
+{
+  "project": "AmpybiOS",
+  "release": "0.1.0-dev",
+  "base": "GrapheneOS",
+  "base_release_tag": "2026100600",
+  "android_major": 17,
+  "device": {
+    "name": "Google Pixel 7 Pro",
+    "codename": "cheetah",
+    "kernel_codename": "pantah"
+  },
+  "build_variant": "user",
+  "upstream_manifest": "https://github.com/GrapheneOS/platform_manifest.git",
+  "upstream_guide": "https://grapheneos.org/build",
+  "security": {
+    "selinux": "enforcing",
+    "verified_boot": "required_for_secure_profile",
+    "default_root": false,
+    "developer_root": "planned_separate_variant"
+  }
+}

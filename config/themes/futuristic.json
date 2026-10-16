@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "id": "futuristic",
+  "label": "futuristic",
+  "mode": "dark",
+  "colors": {
+    "background": "#101725",
+    "surface": "#151929",
+    "foreground": "#EBF6FF",
+    "accent": "#F2BA57",
+    "secondary": "#43D0C3",
+    "radar": "#43D0C3"
+  },
+  "corner_radii_dp": [
+    40,
+    6,
+    25,
+    8
+  ],
+  "effects": {
+    "organic_morph": true,
+    "radar_border": true,
+    "radar_speed_dps": 100,
+    "glow_alpha": 0.25,
+    "glitch_on_rotate": false,
+    "reduced_motion": false
+  },
+  "transition_ms": 280,
+  "scope": [
+    "ampycore",
+    "ampycam",
+    "ampyraw",
+    "ampylauncher"
+  ]
+}

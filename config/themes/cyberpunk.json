@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "id": "cyberpunk",
+  "label": "cyberpunk",
+  "mode": "dark",
+  "colors": {
+    "background": "#080916",
+    "surface": "#151929",
+    "foreground": "#EBF6FF",
+    "accent": "#CF4EFF",
+    "secondary": "#234EFF",
+    "radar": "#234EFF"
+  },
+  "corner_radii_dp": [
+    28,
+    8,
+    32,
+    12
+  ],
+  "effects": {
+    "organic_morph": true,
+    "radar_border": true,
+    "radar_speed_dps": 100,
+    "glow_alpha": 0.45,
+    "glitch_on_rotate": false,
+    "reduced_motion": false
+  },
+  "transition_ms": 280,
+  "scope": [
+    "ampycore",
+    "ampycam",
+    "ampyraw",
+    "ampylauncher"
+  ]
+}

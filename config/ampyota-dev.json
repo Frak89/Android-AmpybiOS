@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "name": "AmpyOTA",
+  "channel": "dev",
+  "device": "cheetah",
+  "update_server_url": null,
+  "automatic_check": true,
+  "automatic_download": true,
+  "automatic_install": true,
+  "network": {
+    "wifi_only": true,
+    "allow_metered_wifi": false
+  },
+  "reboot": "ask_user",
+  "verify_update_signature": true,
+  "disallow_downgrade": true,
+  "preserve_user_data": true,
+  "preserve_profiles": [
+    "ampycore",
+    "ampyskin",
+    "ampylauncher",
+    "boot",
+    "ampyradar"
+  ],
+  "publish_requirements": [
+    "signed_target_files",
+    "verify_ota_signature",
+    "test_ab_update",
+    "test_next_update",
+    "test_rollback",
+    "no_upstream_grapheneos_server"
+  ]
+}

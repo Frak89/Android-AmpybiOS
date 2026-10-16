@@ -1,0 +1,30 @@
+# Android / GrapheneOS checkouts and output
+grapheneos-*/
+.android/
+.repo/
+out/
+releases/
+vendor-binaries/
+*.img
+*.apk
+*.aab
+*.zip
+*.keystore
+*.jks
+*.pk8
+*.pem
+*.key
+*.der
+*.avbpubkey
+*.p12
+*.pfx
+!**/.gitkeep
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+# editor
+.idea/
+.gradle/
+local.properties
+.DS_Store

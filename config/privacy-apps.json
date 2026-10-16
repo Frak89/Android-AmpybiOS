@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "preinstalled_google_apps": [],
+  "google_play_services_preinstalled": false,
+  "google_sandbox_compatibility": "available_on_demand",
+  "default_browser": "Vanadium",
+  "default_email": "Proton Mail",
+  "requested_preinstalls": [
+    {
+      "name": "Proton Mail",
+      "status": "planned"
+    },
+    {
+      "name": "Proton Calendar",
+      "status": "planned"
+    },
+    {
+      "name": "Signal",
+      "status": "planned"
+    },
+    {
+      "name": "Bitwarden",
+      "status": "planned"
+    },
+    {
+      "name": "Aegis Authenticator",
+      "status": "planned"
+    },
+    {
+      "name": "Proton VPN",
+      "status": "planned"
+    },
+    {
+      "name": "Organic Maps",
+      "status": "planned"
+    },
+    {
+      "name": "VLC",
+      "status": "planned"
+    },
+    {
+      "name": "Proton Drive",
+      "status": "planned"
+    },
+    {
+      "name": "Accrescent",
+      "status": "planned"
+    }
+  ],
+  "policy": "Bundle only after checking upstream redistribution license, developer signature, reproducible provenance, out-of-band update strategy, and support for Google-free push notifications."
+}
