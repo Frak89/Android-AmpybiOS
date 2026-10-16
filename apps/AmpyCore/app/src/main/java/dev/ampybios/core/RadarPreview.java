@@ -44,7 +44,7 @@ public final class RadarPreview extends View {
         invalidate();
     }
     public void setFrameRateLimit(int fps) {
-        redrawDelayMs = Math.max(9, 1000 / Math.max(1, Math.min(120, fps)));
+        redrawDelayMs = Math.max(8, 1000 / Math.max(1, Math.min(120, fps)));
     }
     @Override protected void onSizeChanged(int w, int h, int oldW, int oldH) {
         super.onSizeChanged(w, h, oldW, oldH);
