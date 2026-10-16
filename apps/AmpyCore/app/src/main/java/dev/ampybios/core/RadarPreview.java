@@ -25,18 +25,33 @@ public final class RadarPreview extends View {
     private float glow = 0.4f;
     private int speed = 100;
     private long epoch = SystemClock.uptimeMillis();
+    private int redrawDelayMs = 17;
+    private SweepGradient cachedGradient;
+    private boolean gradientDirty = true;
 
     public RadarPreview(Context context) { super(context); }
 
     public void setProfile(ThemeProfile data, boolean radarEnabled, boolean reduce,
                            float glowAlpha, int angularSpeed) {
         this.profile = data;
+        gradientDirty = true;
         this.radar = radarEnabled;
         this.reducedMotion = reduce;
         this.glow = Math.max(0f, Math.min(glowAlpha, 1f));
         this.speed = Math.max(0, Math.min(angularSpeed, 360));
         epoch = SystemClock.uptimeMillis();
         invalidate();
+    }
+    public void setFrameRateLimit(int fps) {
+        redrawDelayMs = Math.max(9, 1000 / Math.max(1, Math.min(120, fps)));
+    }
+    @Override protected void onSizeChanged(int w, int h, int oldW, int oldH) {
+        super.onSizeChanged(w, h, oldW, oldH);
+        gradientDirty = true;
+    }
+    @Override protected void onDetachedFromWindow() {
+        animate = false;
+        super.onDetachedFromWindow();
     }
     public void setVisibleAnimation(boolean enabled) {
         animate = enabled;
@@ -68,15 +83,18 @@ public final class RadarPreview extends View {
         if (radar) {
             float cx = rect.centerX();
             float cy = rect.centerY();
-            Shader gradient = new SweepGradient(cx, cy,
-                    new int[] {profile.secondary, profile.radar, profile.accent,
-                            Color.WHITE, profile.secondary},
-                    new float[] {0f, .45f, .78f, .82f, 1f});
+            if (gradientDirty || cachedGradient == null) {
+                cachedGradient = new SweepGradient(cx, cy,
+                        new int[] {profile.secondary, profile.radar, profile.accent,
+                                Color.WHITE, profile.secondary},
+                        new float[] {0f, .45f, .78f, .82f, 1f});
+                gradientDirty = false;
+            }
             float elapsedSeconds = (SystemClock.uptimeMillis() - epoch) / 1000f;
             float angle = (animate && !reducedMotion) ? elapsedSeconds * speed % 360f : 0;
             rotation.setRotate(angle, cx, cy);
-            gradient.setLocalMatrix(rotation);
-            paint.setShader(gradient);
+            cachedGradient.setLocalMatrix(rotation);
+            paint.setShader(cachedGradient);
         } else {
             paint.setColor(profile.accent);
         }
@@ -92,7 +110,7 @@ public final class RadarPreview extends View {
         paint.setColor(profile.accent);
         canvas.drawText("ORGANIC FUSION", rect.centerX(), rect.centerY() + 25f * density, paint);
         if (animate && radar && !reducedMotion && speed > 0 && getWindowVisibility() == VISIBLE) {
-            postInvalidateOnAnimation();
+            postInvalidateDelayed(redrawDelayMs);
         }
     }
 }

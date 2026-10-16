@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "scope": "AmpyCore UI rendering only until ROM-level control is designed and tested",
+  "device": "cheetah",
+  "modes": [
+    {
+      "id": "eco",
+      "max_preview_fps": 30,
+      "max_radar_speed_dps": 45,
+      "max_glow_percent": 15
+    },
+    {
+      "id": "balanced",
+      "max_preview_fps": 60,
+      "max_radar_speed_dps": 180,
+      "max_glow_percent": 40
+    },
+    {
+      "id": "fusion-extreme",
+      "max_preview_fps": 120,
+      "max_radar_speed_dps": 360,
+      "max_glow_percent": 65
+    }
+  ],
+  "adaptive_safety": {
+    "thermal_status_gte_2": "limit to balanced",
+    "thermal_status_gte_3": "limit to eco",
+    "thermal_status_gte_4": "force reduced motion",
+    "android_battery_saver": "limit to eco",
+    "battery_percent_below_15_while_not_charging": "limit to eco"
+  },
+  "security": {
+    "root_required": false,
+    "kernel_governor_changes": false,
+    "adb_required": false,
+    "background_monitoring": false,
+    "selinux_modification": false
+  }
+}
