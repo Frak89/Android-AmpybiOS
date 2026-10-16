@@ -19,6 +19,7 @@ public final class RadarPreview extends View {
     private final RectF rect = new RectF();
     private final Matrix rotation = new Matrix();
     private ThemeProfile profile;
+    private float[] cornerRadii;
     private boolean radar = true;
     private boolean reducedMotion;
     private boolean animate = true;
@@ -35,12 +36,18 @@ public final class RadarPreview extends View {
                            float glowAlpha, int angularSpeed) {
         boolean themeChanged = this.profile == null || !this.profile.id.equals(data.id);
         this.profile = data;
+        if (this.cornerRadii == null) this.cornerRadii = data.radii.clone();
         gradientDirty = true;
         if (themeChanged) epoch = SystemClock.uptimeMillis();
         this.radar = radarEnabled;
         this.reducedMotion = reduce;
         this.glow = Math.max(0f, Math.min(glowAlpha, 1f));
         this.speed = Math.max(0, Math.min(angularSpeed, 360));
+        invalidate();
+    }
+    public void setCornerRadii(float[] corners) {
+        if (corners == null || corners.length != 8) throw new IllegalArgumentException("8 radii required");
+        cornerRadii = corners.clone();
         invalidate();
     }
     public void setFrameRateLimit(int fps) {
@@ -67,7 +74,7 @@ public final class RadarPreview extends View {
         rect.set(inset, inset, getWidth() - inset, getHeight() - inset);
         if (rect.width() <= 0 || rect.height() <= 0) return;
         border.reset();
-        border.addRoundRect(rect, profile.radii, Path.Direction.CW);
+        border.addRoundRect(rect, cornerRadii == null ? profile.radii : cornerRadii, Path.Direction.CW);
         paint.reset();
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.FILL);

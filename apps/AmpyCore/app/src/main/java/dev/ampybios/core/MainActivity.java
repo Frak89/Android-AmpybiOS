@@ -45,6 +45,11 @@ public final class MainActivity extends Activity {
     private Switch reducedMotionSwitch;
     private SeekBar glowBar;
     private SeekBar radarSpeedBar;
+    private final SeekBar[] cornerBars = new SeekBar[4];
+    private static final String[] CORNERS = {
+        "Angolo superiore sinistro", "Angolo superiore destro",
+        "Angolo inferiore destro", "Angolo inferiore sinistro"
+    };
     private TextView status;
     private TextView controlsDescription;
     private Button saveButton;
@@ -116,6 +121,13 @@ public final class MainActivity extends Activity {
         glowBar = slider(100, value -> persistControls());
         layout.addView(label("Velocità radar", 15, true));
         radarSpeedBar = slider(360, value -> persistControls());
+        spacer(12);
+
+        layout.addView(label("Organic Corner Designer", 18, true));
+        for (int i = 0; i < cornerBars.length; i++) {
+            layout.addView(label(CORNERS[i], 13, false));
+            cornerBars[i] = slider(96, value -> persistControls());
+        }
         spacer(20);
 
         layout.addView(label("AmpyKernel · Performance Lab", 19, true));
@@ -153,12 +165,15 @@ public final class MainActivity extends Activity {
         reset.setText("Ripristina i valori del tema");
         reset.setOnClickListener(view -> {
             if (theme != null) {
-                settings.edit()
+                SharedPreferences.Editor reset = settings.edit()
                         .remove(theme.id + ".radar")
                         .remove(theme.id + ".reduced")
                         .remove(theme.id + ".glow")
-                        .remove(theme.id + ".speed")
-                        .apply();
+                        .remove(theme.id + ".speed");
+                for (int i = 0; i < cornerBars.length; i++) {
+                    reset.remove(theme.id + ".corner." + i);
+                }
+                reset.apply();
                 switchTheme(theme.id);
             }
         });
@@ -224,6 +239,12 @@ public final class MainActivity extends Activity {
             reducedMotionSwitch.setChecked(settings.getBoolean(id + ".reduced", theme.reducedMotion));
             glowBar.setProgress(settings.getInt(id + ".glow", theme.glowDefault));
             radarSpeedBar.setProgress(settings.getInt(id + ".speed", theme.speedDefault));
+            float density = getResources().getDisplayMetrics().density;
+            for (int i = 0; i < cornerBars.length; i++) {
+                int defaultDp = Math.round(theme.radii[2 * i] / density);
+                cornerBars[i].setProgress(Math.min(96, settings.getInt(
+                        id + ".corner." + i, defaultDp)));
+            }
             updating = false;
             applyTheme();
             status.setText("Tema " + theme.label + " caricato · Anteprima locale");
@@ -235,12 +256,15 @@ public final class MainActivity extends Activity {
 
     private void persistControls() {
         if (updating || theme == null) return;
-        settings.edit()
+        SharedPreferences.Editor editor = settings.edit()
                 .putBoolean(theme.id + ".radar", radarSwitch.isChecked())
                 .putBoolean(theme.id + ".reduced", reducedMotionSwitch.isChecked())
                 .putInt(theme.id + ".glow", glowBar.getProgress())
-                .putInt(theme.id + ".speed", radarSpeedBar.getProgress())
-                .apply();
+                .putInt(theme.id + ".speed", radarSpeedBar.getProgress());
+        for (int i = 0; i < cornerBars.length; i++) {
+            editor.putInt(theme.id + ".corner." + i, cornerBars[i].getProgress());
+        }
+        editor.apply();
         applyTheme();
     }
 
@@ -260,6 +284,13 @@ public final class MainActivity extends Activity {
                 Math.min(glowBar.getProgress(), budget.maxGlowPercent) / 100f,
                 Math.min(radarSpeedBar.getProgress(), budget.maxRadarSpeed));
         preview.setFrameRateLimit(budget.targetFps);
+        float[] customRadii = new float[8];
+        for (int i = 0; i < cornerBars.length; i++) {
+            float radius = dp(cornerBars[i].getProgress());
+            customRadii[2 * i] = radius;
+            customRadii[2 * i + 1] = radius;
+        }
+        preview.setCornerRadii(customRadii);
         if (performanceStatus != null) {
             performanceStatus.setText("Richiesto: " + PerformancePolicy.name(budget.requestedProfile)
                     + "  →  Effettivo: " + PerformancePolicy.name(budget.effectiveProfile)
@@ -271,14 +302,14 @@ public final class MainActivity extends Activity {
         saveButton.setTextColor(theme.background);
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(theme.accent);
-        drawable.setCornerRadii(theme.radii);
+        drawable.setCornerRadii(customRadii);
         saveButton.setBackground(drawable);
         controlsDescription.setText(String.format(Locale.ROOT,
                 "ANGOLI SVG: %.0f / %.0f / %.0f / %.0f dp  •  Radar %s",
-                theme.radii[0] / getResources().getDisplayMetrics().density,
-                theme.radii[2] / getResources().getDisplayMetrics().density,
-                theme.radii[4] / getResources().getDisplayMetrics().density,
-                theme.radii[6] / getResources().getDisplayMetrics().density,
+                (float) cornerBars[0].getProgress(),
+                (float) cornerBars[1].getProgress(),
+                (float) cornerBars[2].getProgress(),
+                (float) cornerBars[3].getProgress(),
                 radarSwitch.isChecked() ? "ON" : "OFF"));
     }
 
