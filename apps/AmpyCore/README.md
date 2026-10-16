@@ -8,6 +8,8 @@ M1 UI preview implemented in **plain Android Java + Canvas** to avoid third-part
 - An animated violet/blue/cyan radar perimeter using GPU-compatible Canvas `SweepGradient`.
 - Toggle radar, reduce motion, adjust radar speed and glow.
 - Per-theme preferences persisted locally in private app storage; reset to preset defaults.
+- Eco, Balanced and Fusion Extreme live rendering budgets with thermal and low-battery fallback.
+- Foreground-only temperature, battery, power saver, available RAM and AmpyCore window frame-duration monitor.
 - No network permission, overlays, accessibility hooks, root, device admin or system privileges.
 
 **Not yet implemented:** global theme replacement, SVG template editing/import, launcher, status bar long-press, integration with SystemUI, privileged device tweaks, animations in other apps, actual OTA updater. Those require reviewed ROM patches and platform integration.

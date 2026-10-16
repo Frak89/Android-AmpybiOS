@@ -35,6 +35,10 @@
 - [ ] AmpyConnect MQTT, Bluetooth LE, USB, HTTP, Home Assistant; guard PLC writes
 
 ## M5 — measured performance
-- [ ] Frame-time and jank benchmarks at 60/120 Hz
+- [x] Eco / Balanced / Fusion Extreme adaptive *AmpyCore-only* preview profile logic
+- [x] Local thermal / battery / RAM / app-frame diagnostics (source stage, not device-tested)
+- [x] Pure Java profile policy test harness (device-independent)
+- [ ] Verify APK compilation on Android SDK 37 runner
+- [ ] Frame-time and jank benchmarks at 60/120 Hz on Pixel 7 Pro
 - [ ] Memory, storage, battery and thermal A/B tests
 - [ ] Consider kernel changes only with measured benefit and security review

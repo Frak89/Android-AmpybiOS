@@ -20,5 +20,7 @@ jobs:
         run: python3 scripts/validate_config.py
       - name: Unit tests
         run: python3 -m unittest discover -s tests -v
+      - name: Performance policy tests (JDK)
+        run: bash scripts/test_performance_policy.sh
       - name: Shell syntax
         run: bash -n scripts/*.sh

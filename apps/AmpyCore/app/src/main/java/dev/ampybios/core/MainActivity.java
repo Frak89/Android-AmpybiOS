@@ -48,6 +48,11 @@ public final class MainActivity extends Activity {
     private TextView status;
     private TextView controlsDescription;
     private Button saveButton;
+    private PerformanceMonitor performanceMonitor;
+    private PerformanceMonitor.Snapshot performanceSnapshot;
+    private Spinner performanceSelector;
+    private TextView performanceStatus;
+    private TextView performanceDiagnostics;
     private ThemeProfile theme;
     private boolean updating;
 
@@ -55,6 +60,10 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         settings = getSharedPreferences("ampycore.local.v1", MODE_PRIVATE);
         buildUI();
+        performanceMonitor = new PerformanceMonitor(this, sample -> {
+            performanceSnapshot = sample;
+            if (theme != null) applyTheme();
+        });
         String stored = settings.getString("theme", "fusion");
         int selected = indexFor(stored);
         selector.setSelection(selected);
@@ -79,7 +88,7 @@ public final class MainActivity extends Activity {
         TextView headline = label("AMPYCORE", 28, true);
         headline.setLetterSpacing(0.1f);
         layout.addView(headline);
-        TextView subtitle = label("AM PYBIOS  /  FUSION STUDIO", 12, false);
+        TextView subtitle = label("AMPYBIOS  /  FUSION STUDIO", 12, false);
         subtitle.setTextColor(Color.rgb(142, 162, 195));
         layout.addView(subtitle);
         spacer(24);
@@ -107,6 +116,27 @@ public final class MainActivity extends Activity {
         glowBar = slider(100, value -> persistControls());
         layout.addView(label("Velocità radar", 15, true));
         radarSpeedBar = slider(360, value -> persistControls());
+        spacer(20);
+
+        layout.addView(label("AmpyKernel · Performance Lab", 19, true));
+        TextView note = label("Limita il rendering di AmpyCore, senza modificare kernel, CPU o GPU.", 12, false);
+        note.setTextColor(Color.rgb(151, 170, 198));
+        layout.addView(note);
+        performanceSelector = new Spinner(this);
+        ArrayAdapter<String> performanceAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                new String[]{"Eco", "Balanced", "Fusion Extreme"});
+        performanceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        performanceSelector.setAdapter(performanceAdapter);
+        int savedMode = settings.getInt("performance.profile", PerformancePolicy.BALANCED);
+        performanceSelector.setSelection(Math.max(0, Math.min(2, savedMode)));
+        layout.addView(performanceSelector, new LinearLayout.LayoutParams(-1, dp(55)));
+        performanceStatus = label("Profilo in preparazione", 13, true);
+        layout.addView(performanceStatus);
+        spacer(10);
+        performanceDiagnostics = label("Monitor termico e frame della finestra in avvio", 12, false);
+        performanceDiagnostics.setTextColor(Color.rgb(146, 168, 198));
+        layout.addView(performanceDiagnostics);
         spacer(18);
 
         saveButton = new Button(this);
@@ -146,6 +176,13 @@ public final class MainActivity extends Activity {
         selector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switchTheme(IDS[position]);
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+        performanceSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                settings.edit().putInt("performance.profile", position).apply();
+                if (theme != null) applyTheme();
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
@@ -211,8 +248,26 @@ public final class MainActivity extends Activity {
         if (theme == null) return;
         getWindow().getDecorView().setBackgroundColor(theme.background);
         layout.setBackgroundColor(theme.background);
-        preview.setProfile(theme, radarSwitch.isChecked(), reducedMotionSwitch.isChecked(),
-                glowBar.getProgress() / 100f, radarSpeedBar.getProgress());
+        int mode = settings.getInt("performance.profile", PerformancePolicy.BALANCED);
+        int thermal = performanceSnapshot == null ? -1 : performanceSnapshot.thermal;
+        boolean saver = performanceSnapshot != null && performanceSnapshot.batterySaver;
+        int battery = performanceSnapshot == null ? -1 : performanceSnapshot.batteryPercent;
+        boolean charging = performanceSnapshot != null && performanceSnapshot.charging;
+        PerformancePolicy.Budget budget = PerformancePolicy.resolve(mode, thermal,
+                saver, battery, charging);
+        boolean reduceMotion = reducedMotionSwitch.isChecked() || budget.forceReducedMotion;
+        preview.setProfile(theme, radarSwitch.isChecked(), reduceMotion,
+                Math.min(glowBar.getProgress(), budget.maxGlowPercent) / 100f,
+                Math.min(radarSpeedBar.getProgress(), budget.maxRadarSpeed));
+        preview.setFrameRateLimit(budget.targetFps);
+        if (performanceStatus != null) {
+            performanceStatus.setText("Richiesto: " + PerformancePolicy.name(budget.requestedProfile)
+                    + "  →  Effettivo: " + PerformancePolicy.name(budget.effectiveProfile)
+                    + " · " + budget.targetFps + " FPS max anteprima\\n" + budget.reason);
+        }
+        if (performanceDiagnostics != null && performanceSnapshot != null) {
+            performanceDiagnostics.setText(performanceSnapshot.describe());
+        }
         saveButton.setTextColor(theme.background);
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(theme.accent);
@@ -228,12 +283,14 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onPause() {
-        super.onPause();
+        if (performanceMonitor != null) performanceMonitor.stop();
         if (preview != null) preview.setVisibleAnimation(false);
+        super.onPause();
     }
     @Override protected void onResume() {
         super.onResume();
         if (preview != null) preview.setVisibleAnimation(true);
+        if (performanceMonitor != null) performanceMonitor.start();
     }
 
     private TextView label(String value, int sp, boolean bold) {

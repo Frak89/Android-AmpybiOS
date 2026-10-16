@@ -32,6 +32,16 @@ def validate(root: Path = ROOT) -> None:
     assert privacy["preinstalled_google_apps"] == []
     assert not privacy["google_play_services_preinstalled"]
     assert {app["name"] for app in privacy["requested_preinstalls"]} == REQUIRED_APPS
+    performance = load("config/performance-profiles.json")
+    assert performance["device"] == "cheetah"
+    assert [p["id"] for p in performance["modes"]] == [
+        "eco", "balanced", "fusion-extreme"
+    ]
+    assert [p["max_preview_fps"] for p in performance["modes"]] == [30, 60, 120]
+    assert [p["max_glow_percent"] for p in performance["modes"]] == [15, 40, 65]
+    assert [p["max_radar_speed_dps"] for p in performance["modes"]] == [45, 180, 360]
+    assert performance["security"]["root_required"] is False
+    assert performance["security"]["kernel_governor_changes"] is False
     themes = sorted((root / "config/themes").glob("*.json"))
     assert {p.stem for p in themes} == {"fusion", "cyberpunk", "minimal", "futuristic"}
     for path in themes:

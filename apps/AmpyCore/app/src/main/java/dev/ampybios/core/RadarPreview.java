@@ -33,13 +33,14 @@ public final class RadarPreview extends View {
 
     public void setProfile(ThemeProfile data, boolean radarEnabled, boolean reduce,
                            float glowAlpha, int angularSpeed) {
+        boolean themeChanged = this.profile == null || !this.profile.id.equals(data.id);
         this.profile = data;
         gradientDirty = true;
+        if (themeChanged) epoch = SystemClock.uptimeMillis();
         this.radar = radarEnabled;
         this.reducedMotion = reduce;
         this.glow = Math.max(0f, Math.min(glowAlpha, 1f));
         this.speed = Math.max(0, Math.min(angularSpeed, 360));
-        epoch = SystemClock.uptimeMillis();
         invalidate();
     }
     public void setFrameRateLimit(int fps) {
