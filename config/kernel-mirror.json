@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "device": "cheetah",
+  "codename": "pantah",
+  "baseline_grapheneos_tag": "2026100600",
+  "project_path": "device/google/pantah-kernels/6.1",
+  "upstream_project": "device_google_pantah-kernels_6.1",
+  "upstream_url": "https://github.com/GrapheneOS/device_google_pantah-kernels_6.1",
+  "mirror_url": "https://github.com/Frak89/device_google_pantah-kernels_6.1",
+  "baseline_revision": "2be4d1db4e292ddbe13be98fb6436bbcf1c55890",
+  "latest_observed_mirror_branch": "17",
+  "latest_observed_mirror_revision": "41587d506866a5b569dfb27259994ed8d4e4100d",
+  "enabled_by_default": false,
+  "contains": "prebuilt Linux 6.1 kernel image, modules and metadata; not the complete kernel source code",
+  "policy": "The selected mirrored SHA must equal the pinned GrapheneOS manifest revision. Never substitute the latest branch head automatically."
+}

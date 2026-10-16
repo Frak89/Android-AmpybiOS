@@ -10,4 +10,4 @@
 - Stable production builds require privately held AmpybiOS signing keys, independent update metadata, a custom updater URL, verified boot configuration and factory / OTA tests.
 - Root is not provided by the base build. A future explicitly requested Developer Root variant must be separately documented and clearly marked lower security.
 
-Official references: https://grapheneos.org/build and https://grapheneos.org/releases
+- Pantah mirror: see [docs/KERNEL.md](KERNEL.md). The owner's kernel mirror is optional, locked to the exact upstream prebuilt Git commit, never the latest branch head.\n\nOfficial references: https://grapheneos.org/build and https://grapheneos.org/releases
