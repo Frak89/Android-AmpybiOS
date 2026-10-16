@@ -69,3 +69,9 @@ To gather non-privileged baseline measurements on an attached Pixel 7 Pro:
 ```bash
 bash scripts/benchmark_cheetah.sh ~/benchmarks/pixel7pro-baseline
 ```
+
+## Compile the first test APK
+
+See **[Build AmpyCore APK](docs/BUILD_APK.md)** for Android Studio, local
+Gradle, prerequisites and diagnosis of GitHub Actions jobs that fail before
+runner allocation. You do not need root or a flashed ROM to test AmpyCore.

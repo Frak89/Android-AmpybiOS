@@ -23,3 +23,12 @@ gradle :app:assembleDebug
 Result after a successful build: `app/build/outputs/apk/debug/app-debug.apk`. No release-signed system image is implied.
 
 References: https://developer.android.com/build/releases/agp-9-2-0-release-notes and https://developer.android.com/about/versions/17/setup-sdk
+
+## Organic Corner Designer
+
+A real per-theme editor for four independent corner radii (0–96 dp) is now
+available inside AmpyCore. Slider settings survive app restarts; "Reset" restores
+the original theme defaults. This is local, standalone Android UI, not global
+SystemUI modification.
+
+See [local APK build and troubleshooting](../../docs/BUILD_APK.md).

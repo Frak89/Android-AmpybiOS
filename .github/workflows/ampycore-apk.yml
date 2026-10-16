@@ -28,9 +28,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.4.1'
+      - name: Check local build prerequisites
+        run: bash scripts/build_ampycore_local.sh --doctor
       - name: Compile AmpyCore debug APK
-        working-directory: apps/AmpyCore
-        run: gradle :app:assembleDebug --stacktrace --no-daemon
+        run: bash scripts/build_ampycore_local.sh build
       - uses: actions/upload-artifact@v4
         with:
           name: AmpyCore-debug-apk
