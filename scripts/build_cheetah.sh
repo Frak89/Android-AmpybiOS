@@ -1,17 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 TREE="${1:-}"
 if [[ -z "$TREE" || ! -f "$TREE/build/envsetup.sh" ]]; then
   echo "Usage: $0 /absolute/path/to/synced/grapheneos-tree" >&2
   exit 2
 fi
 cd "$TREE"
+
 if [[ ! -d vendor/google_devices ]]; then
-  echo "Warning: check Pixel vendor extraction (adevtool generate-all -d cheetah) before building." >&2
+  echo "Warning: verify Pixel vendor extraction (adevtool generate-all -d cheetah) before building." >&2
 fi
-export OFFICIAL_BUILD=false
-# User builds are security-relevant; do NOT use userdebug for daily use.
+
+# Critical: GrapheneOS includes Updater when OFFICIAL_BUILD is enabled. Never
+# set it to the nonempty string 'false'; unset it for this unspecialized build.
+# We have NOT configured an independent AmpyOTA endpoint or signed release.
+unset OFFICIAL_BUILD || true
+
+# AOSP envsetup may refer to unset shell variables.
+set +u
 source build/envsetup.sh
 lunch cheetah-cur-user
+set -u
+
 m vendorbootimage vendorkernelbootimage target-files-package
-echo "Unsigned build target files complete; no AmpybiOS ROM or OTA package signed."
+echo "Upstream development target-files built. No AmpybiOS patches, release signing or OTA server were applied."
