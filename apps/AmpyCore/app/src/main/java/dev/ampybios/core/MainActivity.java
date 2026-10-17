@@ -83,6 +83,7 @@ public final class MainActivity extends Activity {
     };
     private ThemeProfile theme;
     private boolean updating;
+    private int appliedImportVersion = -1;
     private static final String SKIN_ACTION = "dev.ampybios.action.SKIN_CHANGED";
     private static final String SKIN_PERMISSION = "dev.ampybios.permission.SKIN_SYNC";
 
@@ -238,7 +239,7 @@ public final class MainActivity extends Activity {
     }
 
     private void switchTheme(String id) {
-        try (InputStream stream = getAssets().open(id + ".json")) {
+        try (InputStream stream = getThemeStream(id)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] chunk = new byte[2048];
             int len;
@@ -277,6 +278,15 @@ public final class MainActivity extends Activity {
             updating = false;
             status.setText("Tema non disponibile: " + error.getClass().getSimpleName());
         }
+    }
+
+    private InputStream getThemeStream(String id) throws java.io.IOException {
+        // Uploaded overrides are accepted ONLY by the signature-protected
+        // receiver, under a bounded JSON schema, and retained privately.
+        java.io.File custom = new java.io.File(
+                new java.io.File(getFilesDir(), "AmpyRecThemes"), id + ".json");
+        if (custom.isFile()) return new java.io.FileInputStream(custom);
+        return getAssets().open(id + ".json");
     }
 
     private void persistControls() {
@@ -406,6 +416,14 @@ public final class MainActivity extends Activity {
                 new IntentFilter(Intent.ACTION_SCREEN_OFF));
         screenReceiverRegistered = true;
         if (performanceMonitor != null) performanceMonitor.start();
+        int version = settings.getInt("ampyrec.import_version", 0);
+        if (appliedImportVersion != version) {
+            appliedImportVersion = version;
+            if (selector != null) {
+                String selected = settings.getString("theme", "fusion");
+                switchTheme(IDS[indexFor(selected)]);
+            }
+        }
         PowerManager power = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (power != null && !power.isInteractive()) enterIdle();
         else {
