@@ -78,13 +78,28 @@ public final class SourceZipInspector {
         return !path.matches("^[A-Za-z]:.*");
     }
 
+    @FunctionalInterface
+    interface SourceOpener {
+        InputStream open() throws IOException;
+    }
+
     public static Result inspect(Context context, Uri source) throws Exception {
+        return inspect(() -> {
+            InputStream input=context.getContentResolver().openInputStream(source);
+            if (input == null) throw new IOException("Il documento non è accessibile");
+            return input;
+        });
+    }
+
+    // Pure, testable stream path. Input is reopened to hash ALL ZIP bytes,
+    // including the central directory, rather than just inflated file content.
+    static Result inspect(SourceOpener opener) throws Exception {
         int count = 0;
         long expanded = 0;
         boolean core = false, launcher = false, rec = false, ota = false;
         Set<String> names = new HashSet<>();
         long compressedDuringParse;
-        try (InputStream in = context.getContentResolver().openInputStream(source)) {
+        try (InputStream in = opener.open()) {
             if (in == null) throw new IOException("Il documento sorgente non è accessibile");
             Bounded bounded = new Bounded(new BufferedInputStream(in),MAX_ARCHIVE);
             try (ZipInputStream zip = new ZipInputStream(bounded)) {
@@ -125,7 +140,7 @@ public final class SourceZipInspector {
         long total = 0;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            try (InputStream input = context.getContentResolver().openInputStream(source)) {
+            try (InputStream input = opener.open()) {
                 if (input == null) throw new IOException("Il documento è scomparso");
                 byte[] chunk = new byte[CHUNK];
                 int n;
