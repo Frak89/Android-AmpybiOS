@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# AmpyCore standalone debug APK: local build with deterministic preflight.
+# AmpyCore/AmpyCam standalone debug APK: local build with deterministic preflight.
 # Use 'bash scripts/build_ampycore_local.sh --doctor' to inspect requirements.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT="$ROOT/apps/AmpyCore"
+APP="${AMPY_ANDROID_APP:-AmpyCore}"
+case "$APP" in
+  AmpyCore|AmpyCam) ;;
+  *) echo "Only AmpyCore/AmpyCam standalone debug builds are allowed" >&2; exit 2 ;;
+esac
+PROJECT="$ROOT/apps/$APP"
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 MODE="${1:-build}"
 
@@ -61,4 +66,4 @@ cd "$PROJECT"
 gradle --no-daemon --stacktrace :app:assembleDebug
 APK="$PROJECT/app/build/outputs/apk/debug/app-debug.apk"
 [[ -s "$APK" ]] || { echo "Build ended without a debug APK at $APK" >&2; exit 1; }
-echo "Debug APK: $APK"
+echo "$APP debug APK: $APK"

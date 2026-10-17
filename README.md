@@ -18,8 +18,8 @@
 ## Repository layout
 
 - `config/`: device, OTA, privacy application selection and theme profiles.
-- `assets/boot/`: editable SVG boot concepts.
-- `scripts/`: pinned-source bootstrap, developer build and bootanimation packaging.
+- `assets/boot/`: editable SVG boot concepts, plus the generated organic motion tool under `overlays/`.
+- `scripts/`: pinned-source bootstrap, explicit product integration, developer build and validated bootanimation packaging.
 - `tests/`: host-side checks for JSON profiles and animation output.
 - `docs/`: upstream guidance, project milestones, security model.
 
@@ -77,3 +77,19 @@ bash scripts/benchmark_cheetah.sh ~/benchmarks/pixel7pro-baseline
 See **[Build AmpyCore APK](docs/BUILD_APK.md)** for Android Studio, local
 Gradle, prerequisites and diagnosis of GitHub Actions jobs that fail before
 runner allocation. You do not need root or a flashed ROM to test AmpyCore.
+
+## App prototypes and skin contract
+
+- **[AmpyCore](apps/AmpyCore/README.md)**: four live themes, organic corners,
+  radar effects and adaptive rendering/thermal diagnostics.
+- **[AmpyCam](apps/AmpyCam/README.md)**: standalone Camera2 live preview and
+  RAW_SENSOR DNG capture to local scoped storage. Source stage, not device-tested.
+- **[AmpySkin JSON contract](docs/THEME_CONTRACT.md)**: shared palettes and corner
+  presets across both apps. Per-app settings for now; global synchronization
+  is not implemented.
+- **[AmpyBoot Organic Generator](overlays/cheetah/vendor/ampybi/boot_logo_package/README.md)**:
+  reproducible vector frames, optional PNG rendering and integrity-checked ZIP.
+- **[Current audit/status](docs/STATUS.md)**: implemented, planned and blockers.
+
+Android Studio: open `apps/AmpyCore` or `apps/AmpyCam` independently.
+Neither project is a flashable firmware image. See [APK build notes](docs/BUILD_APK.md).

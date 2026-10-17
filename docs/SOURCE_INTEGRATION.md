@@ -45,7 +45,10 @@ Never copy the entire `overlays/` directory into a product partition: it contain
 
 ### Privacy apps and photographic modules
 
-The app list is a specification, not packaged third-party APKs. AmpyCam, AmpyRaw and AmpyConnect are future native modules. Their upstream project licenses and binary signatures must be reviewed before inclusion.
+The app list is a specification, not packaged third-party APKs. AmpyCam now has a separate **unverified standalone Camera2/DNG source prototype**
+under `apps/AmpyCam`. It is deliberately NOT preinstalled in the ROM until
+its APK compilation, runtime tests, hardware capability checks and crash
+handling have been verified. AmpyRaw and AmpyConnect remain future modules. Their upstream project licenses and binary signatures must be reviewed before inclusion.
 
 ## Release and patch strategy
 

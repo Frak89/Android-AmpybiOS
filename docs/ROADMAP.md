@@ -7,6 +7,7 @@
 - [x] Google-free privacy app plan, not yet bundled
 - [x] Cyberpunk, Futuristic, Minimal, Fusion profile JSON and sample SVG frames
 - [x] PNG boot animation packager and host tests
+- [x] Original AmpyBoot organic SVG frame generator; CairoSVG PNG path pending real rendering test
 - [ ] Full OS source downloaded on build machine, hardware vendor blobs extracted
 - [ ] Signed ROM and smoke test
 
@@ -29,9 +30,12 @@
 - [ ] Secure/research-root modes, no silent global superuser
 
 ## M4 — photography and connected devices
-- [ ] AmpyCam DNG capture (Camera2 availability gates)
+- [x] AmpyCam source prototype: Camera2 RAW_SENSOR preview and DNG MediaStore write
+- [ ] AmpyCam Android APK compilation and Pixel camera/rotation/storage smoke tests
+- [ ] AmpyCam full manual controls, bracketing, RAW+JPEG and multi-frame pipeline
 - [ ] AmpyRaw safe LibRaw-based CR3 decoding and non-destructive pipeline
-- [ ] Shared AmpySkin theme contract
+- [x] Shared four-theme JSON palette/corner contract in AmpyCore and AmpyCam
+- [ ] Cross-app theme event service via safe ROM framework API
 - [ ] AmpyConnect MQTT, Bluetooth LE, USB, HTTP, Home Assistant; guard PLC writes
 
 ## M5 — measured performance
