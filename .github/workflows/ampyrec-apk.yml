@@ -32,6 +32,8 @@ jobs:
           gradle-version: '9.4.1'
       - name: Check local build prerequisites
         run: bash scripts/build_ampyrec_local.sh --doctor
+      - name: Run ZIP validator unit tests
+        run: cd apps/AmpyRec && gradle --no-daemon :app:testDebugUnitTest
       - name: Compile AmpyRec debug APK
         run: bash scripts/build_ampyrec_local.sh build
       - name: Verify compiled APK identity, signature, permissions and digest
