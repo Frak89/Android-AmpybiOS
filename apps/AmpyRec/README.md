@@ -37,9 +37,9 @@ sizes and hashes are validated. The hashes protect file integrity, **not the
 identity of the author**. Users must explicitly choose and confirm updates.
 Use only packages from sources you trust.
 
-The content becomes a new immutable `releases/<ZIP_HASH>` folder in the app
-private storage. A single SharedPreferences pointer activates the completed
-release. A signature-permission protected **ContentProvider.call()** sends the validated
+AmpyRec does not retain duplicate decompressed theme files. After a
+signed acknowledgement, AmpyCore stores the active theme in its own versioned
+private release directory. AmpyRec retains only minimal transaction metadata. A signature-permission protected **ContentProvider.call()** sends the validated
 release to AmpyCore synchronously. AmpyRec checks matching app certificates
 before invoking the provider. AmpyCore validates the entire batch again,
 commits its own private release atomically, and returns a positive acknowledgement.
@@ -65,7 +65,7 @@ unlocking the bootloader wipes data, so export backups first.
 ## The three buttons after verifying a LIVE ZIP
 
 - **Applica ora:** execute safely within this app's UI; no reboot.
-- **Rimanda:** the pending ZIP remains in private storage across reboots.
+- **Rimanda:** the pending ZIP or its persistent SAF reference remains available across reboots.
   Android delivers a **notification** (if notifications are permitted) after
   each user login/boot; Android will not let the app pop up over the lockscreen.
   The user chooses again when opening AmpyRec.

@@ -88,3 +88,11 @@ source controls **only**, not a compiled binary.
 - Neither the app nor the kernel has passed Android APK/ROM compilation.
 - No user data deletion is introduced by AmpyRec. A first-time custom ROM
   install cannot promise data retention across bootloader unlock.
+
+### Source hardening note
+
+AmpyRec's previous second copy of uncompressed active themes was eliminated.
+AmpyCore alone holds the installed theme data. The original file is never
+deleted; selecting reference-only staging persists a read grant and hash,
+rather than copying the selected package. Execution on Android hardware is
+still unverified; the latest GitHub Actions job had no allocated runner.

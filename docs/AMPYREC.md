@@ -12,7 +12,7 @@ PICK ZIP → PRIVATE COPY / CHECK BOUNDS → INSPECT / SHA-256
   ├─ A/B system payload ZIP → analysis only (not cryptographically authorized)
   └─ valid AmpyRec theme manifest
           │
-          └─ verified private staged.zip
+          └─ verified private ZIP **or** persisted SAF document URI
                    ├─ Apply now → verified release in AmpyCore, synchronous signed acknowledgement
                    ├─ Next boot → notification if permitted, user chooses
                    └─ Background → constrained reboot-persistent JobScheduler
