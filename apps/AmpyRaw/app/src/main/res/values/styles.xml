@@ -1,0 +1,8 @@
+<resources>
+  <style name="Theme.AmpyRaw" parent="android:style/Theme.Material.NoActionBar">
+    <item name="android:colorAccent">#18E1EE</item>
+    <item name="android:statusBarColor">#060916</item>
+    <item name="android:navigationBarColor">#060916</item>
+    <item name="android:windowLightStatusBar">false</item>
+  </style>
+</resources>
