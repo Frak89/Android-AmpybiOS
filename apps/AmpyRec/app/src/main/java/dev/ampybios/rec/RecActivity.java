@@ -208,10 +208,7 @@ public final class RecActivity extends Activity {
         refreshButtons();
     }
     private void clearPending() {
-        RecState.cancelJob(this);
-        RecState.prefs(this).edit().remove("state").remove("hash")
-                .remove("kind").remove("message").apply();
-        RecState.staged(this).delete();
+        RecState.cancelPending(this);
         BootReminder.clear(this);
         show("Aggiornamento in attesa annullato. I temi già applicati restano.");
         refreshButtons();

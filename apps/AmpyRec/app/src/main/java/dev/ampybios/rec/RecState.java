@@ -68,10 +68,23 @@ public final class RecState {
                 if (report.kind != RecPackage.Kind.LIVE_THEME) return report;
                 // A previously scheduled job must not run against a replaced ZIP.
                 cancelJob(context);
-                if (dest.exists() && !dest.delete())
-                    throw new IOException("Impossibile sostituire staging");
-                if (!tmp.renameTo(dest))
-                    throw new IOException("Impossibile finalizzare staging");
+                try {
+                    java.nio.file.Files.move(tmp.toPath(),dest.toPath(),
+                            java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                } catch (java.nio.file.AtomicMoveNotSupportedException noAtomic) {
+                    // Same-private-directory fallback with rollback of prior ZIP.
+                    File backup = new File(area(context), "staged.backup");
+                    if (backup.exists() && !backup.delete())
+                        throw new IOException("Backup staging non cancellabile");
+                    if (dest.exists() && !dest.renameTo(backup))
+                        throw new IOException("Backup staging non possibile");
+                    if (!tmp.renameTo(dest)) {
+                        if (backup.exists()) backup.renameTo(dest);
+                        throw new IOException("Impossibile finalizzare staging");
+                    }
+                    backup.delete();
+                }
                 boolean persisted = prefs(context).edit()
                         .putString("state", "staged")
                         .putString("hash", report.zipSha256)
@@ -156,6 +169,16 @@ public final class RecState {
         if (jobs.schedule(task)!=JobScheduler.RESULT_SUCCESS) return false;
         preferences.edit().putString("state","background").apply();
         return true;
+    }
+
+    /** Cancel only under the same lock used by stage/apply. */
+    public static void cancelPending(Context context) {
+        synchronized (LOCK) {
+            cancelJob(context);
+            prefs(context).edit().remove("state").remove("hash")
+                    .remove("kind").remove("message").commit();
+            staged(context).delete();
+        }
     }
 
     public static void cancelJob(Context context) {
