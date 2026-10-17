@@ -1,0 +1,41 @@
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index c93954613691..000000000000 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -210,8 +210,19 @@
+ 	  both cases.
+ 
+ 	  If in doubt, say N.
+ 
++config AMPYKERNEL_SUGOV_ECO_DEFAULT
++	bool "AmpyKernel: conservative schedutil starting rate limit"
++	depends on CPU_FREQ_GOV_SCHEDUTIL
++	default n
++	help
++	  Experimental opt-in for AmpyKernel benchmarks on Pantah.
++	  Keep schedutil's default governor update interval at least 2000us.
++	  Userspace may still write schedutil's rate_limit_us tunable.
++	  The kernel and Android thermal/frequency limits remain authoritative.
++	  If unsure, say N.
++
+ comment "CPU frequency scaling drivers"
+ 
+ config CPUFREQ_DT
+ 	tristate "Generic DT based cpufreq driver"
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index ca4c106924cb..000000000000 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -727,8 +727,12 @@
+ 		goto stop_kthread;
+ 	}
+ 
+ 	tunables->rate_limit_us = cpufreq_policy_transition_delay_us(policy);
++#ifdef CONFIG_AMPYKERNEL_SUGOV_ECO_DEFAULT
++	/* Conservative baseline; never lower the driver's transition limit. */
++	tunables->rate_limit_us = max(tunables->rate_limit_us, 2000U);
++#endif
+ 
+ 	policy->governor_data = sg_policy;
+ 	sg_policy->tunables = tunables;
+ 

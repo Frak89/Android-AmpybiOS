@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "project": "AmpyKernel",
+  "target": "Pixel 7 Pro (cheetah / pantah)",
+  "source_project": "GrapheneOS/kernel_common-6.1",
+  "source_ref": "a001019bb34ebe7b18cfc025b75a7550744a3e60",
+  "os_release_tag": "2026100600",
+  "os_kernel_match_verified": false,
+  "patches": [
+    {
+      "file": "kernel/AmpyKernel/patches/0001-schedutil-opt-in-eco-default.patch",
+      "id": "sugov-eco-default-v1",
+      "title": "Optional 2ms minimum schedutil initial update interval",
+      "default_enabled": false,
+      "config": "CONFIG_AMPYKERNEL_SUGOV_ECO_DEFAULT",
+      "description": "Kernel scheduler governor tunable default only; no changes to CPU frequency max, thermals or security",
+      "source_files": [
+        {
+          "path": "drivers/cpufreq/Kconfig",
+          "blob_sha": "c939546136915a7788b6ce94a98467994499d52e",
+          "length": 10316,
+          "unique_anchor": 1,
+          "edited": true
+        },
+        {
+          "path": "kernel/sched/cpufreq_schedutil.c",
+          "blob_sha": "ca4c106924cb500a7747d3e0f8c02efc598ad9af",
+          "length": 24572,
+          "unique_anchor": 1,
+          "edited": true
+        }
+      ]
+    }
+  ],
+  "security": {
+    "apply_requires_clean_checkout": true,
+    "apply_requires_exact_head_sha": true,
+    "apply_requires_exact_file_blob_shas": true,
+    "flashable": false,
+    "do_not_replace_rom_prebuilts_without_abi_tests": true
+  }
+}
