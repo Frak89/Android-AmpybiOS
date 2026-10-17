@@ -68,6 +68,7 @@ public final class CameraActivity extends Activity {
     private ImageReader rawReader;
     private Surface previewSurface;
     private String selectedCameraId;
+    private volatile boolean activityVisible;
     private boolean opening;
     private boolean capturePending;
     private Image pendingRaw;
@@ -80,7 +81,9 @@ public final class CameraActivity extends Activity {
         }
         @Override public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int w, int h) {}
         @Override public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            closeCamera();
+            Handler handler = cameraHandler;
+            if (handler != null) handler.post(this::closeCamera);
+            else closeCamera();
             return true;
         }
         @Override public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
@@ -134,7 +137,10 @@ public final class CameraActivity extends Activity {
         bg.setCornerRadius(px(36));
         shutter.setBackground(bg);
         shutter.setEnabled(false);
-        shutter.setOnClickListener(v -> takeRawPicture());
+        shutter.setOnClickListener(v -> {
+            Handler handler = cameraHandler;
+            if (handler != null) handler.post(this::takeRawPicture);
+        });
         LinearLayout.LayoutParams button = new LinearLayout.LayoutParams(-1, px(66));
         button.topMargin = px(16);
         lower.addView(shutter, button);
@@ -162,6 +168,7 @@ public final class CameraActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        activityVisible = true;
         cameraThread = new HandlerThread("AmpyCam-Camera2");
         cameraThread.start();
         cameraHandler = new Handler(cameraThread.getLooper());
@@ -169,7 +176,12 @@ public final class CameraActivity extends Activity {
     }
 
     @Override protected void onPause() {
-        closeCamera();
+        activityVisible = false;
+        canCapture(false);
+        // Serialize cleanup after any already queued image/capture callbacks.
+        Handler handler = cameraHandler;
+        if (handler != null) handler.post(this::closeCamera);
+        else closeCamera();
         if (cameraThread != null) {
             cameraThread.quitSafely();
             cameraThread = null;
@@ -179,7 +191,8 @@ public final class CameraActivity extends Activity {
     }
 
     private void openCameraIfReady() {
-        if (opening || device != null || !texture.isAvailable() || cameraHandler == null) return;
+        if (!activityVisible || opening || device != null || !texture.isAvailable() ||
+                cameraHandler == null) return;
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA);
             return;
@@ -229,6 +242,10 @@ public final class CameraActivity extends Activity {
     private final CameraDevice.StateCallback cameraState = new CameraDevice.StateCallback() {
         @Override public void onOpened(CameraDevice camera) {
             opening = false;
+            if (!activityVisible) {
+                camera.close();
+                return;
+            }
             device = camera;
             startPreview();
         }
@@ -272,6 +289,10 @@ public final class CameraActivity extends Activity {
             device.createCaptureSession(Arrays.asList(previewSurface, rawReader.getSurface()),
                     new CameraCaptureSession.StateCallback() {
                         @Override public void onConfigured(CameraCaptureSession configured) {
+                            if (!activityVisible || device == null) {
+                                configured.close();
+                                return;
+                            }
                             session = configured;
                             try {
                                 CaptureRequest.Builder preview = device.createCaptureRequest(
@@ -285,7 +306,8 @@ public final class CameraActivity extends Activity {
                                         raw.getWidth() + " × " + raw.getHeight() +
                                         " · DNG · senza cloud"));
                                 show("Pronta: salvataggio in Pictures/AmpyCam");
-                            } catch (CameraAccessException e) {
+                            } catch (CameraAccessException | IllegalStateException e) {
+                                canCapture(false);
                                 show("Anteprima non disponibile");
                             }
                         }
@@ -300,7 +322,8 @@ public final class CameraActivity extends Activity {
     }
 
     private void takeRawPicture() {
-        if (session == null || device == null || cameraHandler == null || capturePending) return;
+        if (!activityVisible || session == null || device == null ||
+                cameraHandler == null || capturePending) return;
         capturePending = true;
         canCapture(false);
         show("Acquisizione RAW in corso...");
@@ -387,8 +410,8 @@ public final class CameraActivity extends Activity {
     }
 
     private void closeCamera() {
-        canCapture(false);
         clearPending(null);
+        canCapture(false);
         if (session != null) { session.close(); session = null; }
         if (device != null) { device.close(); device = null; }
         if (rawReader != null) { rawReader.close(); rawReader = null; }
