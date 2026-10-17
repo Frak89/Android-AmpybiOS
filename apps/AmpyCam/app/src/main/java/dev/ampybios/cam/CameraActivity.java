@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -32,9 +33,12 @@ import android.view.Gravity;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -53,9 +57,13 @@ import java.util.Locale;
 public final class CameraActivity extends Activity {
     private static final int REQUEST_CAMERA = 102;
     private static final int BACKGROUND = Color.rgb(6, 9, 22);
-    private static final int CYAN = Color.rgb(24, 225, 238);
-    private static final int VIOLET = Color.rgb(154, 76, 246);
+    private static final String[] THEMES = {"fusion", "cyberpunk", "futuristic", "minimal"};
+    private static final String[] THEME_LABELS = {"Fusion", "Cyberpunk", "Futuristic", "Minimal"};
 
+    private FrameLayout rootLayout;
+    private TextView titleView;
+    private Spinner themeSelector;
+    private SharedPreferences themePreferences;
     private TextureView texture;
     private TextView status;
     private TextView details;
@@ -91,11 +99,13 @@ public final class CameraActivity extends Activity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        themePreferences = getSharedPreferences("ampycam.theme", MODE_PRIVATE);
         makeUi();
     }
 
     private void makeUi() {
-        FrameLayout root = new FrameLayout(this);
+        rootLayout = new FrameLayout(this);
+        FrameLayout root = rootLayout;
         root.setBackgroundColor(BACKGROUND);
         texture = new TextureView(this);
         texture.setSurfaceTextureListener(textureListener);
@@ -108,11 +118,26 @@ public final class CameraActivity extends Activity {
                 GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[] {0xf8060916, 0x00060916});
         upper.setBackground(upperBg);
-        TextView title = label("AMPYCAM", 25, CYAN, true);
-        title.setLetterSpacing(.12f);
-        upper.addView(title);
+        titleView = label("AMPYCAM", 25, Color.CYAN, true);
+        titleView.setLetterSpacing(.12f);
+        upper.addView(titleView);
         details = label("RAW DNG  •  Camera2", 13, Color.WHITE, false);
         upper.addView(details);
+        themeSelector = new Spinner(this);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, THEME_LABELS);
+        themeSelector.setAdapter(adapter);
+        upper.addView(themeSelector, new LinearLayout.LayoutParams(-1, px(44)));
+        themeSelector.setSelection(findTheme(themePreferences.getString("theme", "fusion")));
+        themeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view,
+                                                  int position, long id) {
+                String name = THEMES[position];
+                themePreferences.edit().putString("theme", name).apply();
+                applyTheme(CamTheme.load(CameraActivity.this, name));
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
         root.addView(upper, new FrameLayout.LayoutParams(-1, -2, Gravity.TOP));
 
         LinearLayout lower = new LinearLayout(this);
@@ -131,11 +156,6 @@ public final class CameraActivity extends Activity {
         shutter.setAllCaps(false);
         shutter.setTextSize(17f);
         shutter.setTextColor(BACKGROUND);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(CYAN);
-        bg.setStroke(px(2), VIOLET);
-        bg.setCornerRadius(px(36));
-        shutter.setBackground(bg);
         shutter.setEnabled(false);
         shutter.setOnClickListener(v -> {
             Handler handler = cameraHandler;
@@ -146,6 +166,26 @@ public final class CameraActivity extends Activity {
         lower.addView(shutter, button);
         root.addView(lower, new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM));
         setContentView(root);
+        applyTheme(CamTheme.load(this, THEMES[themeSelector.getSelectedItemPosition()]));
+    }
+
+    private int findTheme(String id) {
+        for (int i = 0; i < THEMES.length; i++) {
+            if (THEMES[i].equals(id)) return i;
+        }
+        return 0;
+    }
+
+    private void applyTheme(CamTheme theme) {
+        rootLayout.setBackgroundColor(theme.background);
+        titleView.setTextColor(theme.accent);
+        details.setTextColor(theme.foreground);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(theme.accent);
+        bg.setStroke(px(2), theme.secondary);
+        bg.setCornerRadii(theme.radiiDp(this));
+        shutter.setTextColor(theme.background);
+        shutter.setBackground(bg);
     }
 
     private TextView label(String text, int size, int color, boolean bold) {

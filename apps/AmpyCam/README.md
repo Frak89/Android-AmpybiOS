@@ -8,7 +8,7 @@ AmpyCam is a **standalone Android app**, not yet preinstalled in AmpybiOS.
 - Uses TextureView for local live preview, auto exposure/focus, a single DNG shutter.
 - Writes DNG through DngCreator to app-created `Pictures/AmpyCam` in MediaStore.
 - No Google services, account, telemetry or cloud uploads.
-- The UI prototype uses a dark AmpybiOS palette, cyan shutter and violet border.
+- Four selectable native AmpySkin presets from the same shared `config/themes/*.json` as AmpyCore, with per-app persistence. System-wide automatic synchronization is **not** yet available.
 - Camera availability / exact RAW dimensions / thermal effects require **real Pixel testing**.
 
 The same camera session must **not** be used by other apps simultaneously.
