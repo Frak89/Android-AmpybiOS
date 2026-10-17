@@ -47,3 +47,27 @@ with zero executed steps. This is not evidence of a Java compilation error, but
 
 Do not flash development artifacts. Do not copy newer kernel binary blobs
 into an older release or misrepresent a prebuilt kernel mirror as source C code.
+
+## Update: source-stage modules added 2026-10-17
+
+- `AmpyRaw` native non-destructive JPEG/PNG/WebP color preview and new JPEG
+  copy: **not** Canon CR3/DNG, not full-resolution and not APK-tested.
+- `AmpyConnect` HTTPS-only, user-initiated Home Assistant GET state viewer:
+  **does not issue device commands or PLC writes**.
+- `AmpyLauncher` standalone HOME candidate with clock/battery/app drawer
+  and opt-in default selection, **not yet device-tested**.
+- `AmpyCore` signature-permission broadcast now targets Cam/Raw/Connect/
+  Launcher. Only same-signer recipients can accept the broadcast.
+- `scripts/build_ampybios_dev.sh` and `check_build_host.py` provide a
+  resource-checked path to unsigned target-files on a compatible Linux host.
+  These scripts cannot build the full ROM on this limited runtime.
+- Five independent Android Studio projects are present. Neither host Gradle
+  nor Android SDK 37 is available in this assistant's container. **No APK or
+  flashable signed image has been produced or tested.**
+- GitHub Actions has consistently failed without a runner being assigned;
+  this repository's Actions/billing status needs review by an administrator.
+
+The project is at **prototype/source-integration stage**. A secure, flashable
+AmpybiOS OS still requires complete synchronized upstream sources, build
+and vendor setup, verified security patches, platform integration (especially
+SystemUI), device validation, custom signing and OTA releases.

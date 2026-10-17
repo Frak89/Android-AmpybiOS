@@ -47,3 +47,24 @@ We cannot determine the precise cause from the API response alone. The project m
 - Rotate the Pixel; background/foreground the app; verify drawing resumes, without a runaway render loop.
 - Verify no app requests root or accesses the network.
 - Check UI with Android large text and screen magnification.
+
+## All independent Android Studio projects (source stage)
+
+- `apps/AmpyCore`
+- `apps/AmpyCam`
+- `apps/AmpyRaw`
+- `apps/AmpyConnect`
+- `apps/AmpyLauncher`
+
+Open **one app's directory** in Android Studio and use `Build → Build APK(s)`.
+The five projects are Gradle 9.4.1 / AGP 9.2 / Android SDK API 37 projects.
+They are not yet confirmed to compile with installed Android SDK 37.
+
+For Linux build preflight, from repo root:
+```bash
+ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampycore_local.sh --doctor
+ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampycam_local.sh build
+ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampyraw_local.sh build
+ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampyconnect_local.sh build
+ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampylauncher_local.sh build
+```
