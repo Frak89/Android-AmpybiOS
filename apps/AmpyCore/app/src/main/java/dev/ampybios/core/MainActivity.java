@@ -8,6 +8,14 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
+import android.content.Context;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
@@ -57,9 +65,28 @@ public final class MainActivity extends Activity {
     private Button saveButton;
     private PerformanceMonitor performanceMonitor;
     private PerformanceMonitor.Snapshot performanceSnapshot;
-    private Spinner performanceSelector;
-    private TextView performanceStatus;
-    private TextView performanceDiagnostics;
+    private AmpyKernelLabView kernelLab;
+    private final Handler standbyHandler = new Handler(Looper.getMainLooper());
+    private boolean appForeground;
+    private boolean standbyIdle;
+    private boolean screenReceiverRegistered;
+    private float appliedWindowHz = -1f;
+    private static final long IDLE_TIMEOUT_MS = 30_000L;
+    private final Runnable idleAction = () -> {
+        if (!appForeground || kernelLab == null || !kernelLab.isStandbyEnabled()) return;
+        enterIdle();
+    };
+    private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+        @Override public void onReceive(Context context, Intent action) {
+            if (Intent.ACTION_SCREEN_OFF.equals(action.getAction())) {
+                // Safety: stop the app's animation regardless of the optional toggle.
+                enterIdle();
+            } else if (Intent.ACTION_SCREEN_ON.equals(action.getAction())
+                    && appForeground) {
+                leaveIdle();
+            }
+        }
+    };
     private ThemeProfile theme;
     private boolean updating;
     private static final String SKIN_ACTION = "dev.ampybios.action.SKIN_CHANGED";
@@ -134,25 +161,14 @@ public final class MainActivity extends Activity {
         }
         spacer(20);
 
-        layout.addView(label("AmpyKernel · Performance Lab", 19, true));
-        TextView note = label("Limita il rendering di AmpyCore, senza modificare kernel, CPU o GPU.", 12, false);
-        note.setTextColor(Color.rgb(151, 170, 198));
-        layout.addView(note);
-        performanceSelector = new Spinner(this);
-        ArrayAdapter<String> performanceAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Eco", "Balanced", "Fusion Extreme"});
-        performanceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        performanceSelector.setAdapter(performanceAdapter);
-        int savedMode = settings.getInt("performance.profile", PerformancePolicy.BALANCED);
-        performanceSelector.setSelection(Math.max(0, Math.min(2, savedMode)));
-        layout.addView(performanceSelector, new LinearLayout.LayoutParams(-1, dp(55)));
-        performanceStatus = label("Profilo in preparazione", 13, true);
-        layout.addView(performanceStatus);
-        spacer(10);
-        performanceDiagnostics = label("Monitor termico e frame della finestra in avvio", 12, false);
-        performanceDiagnostics.setTextColor(Color.rgb(146, 168, 198));
-        layout.addView(performanceDiagnostics);
+        kernelLab = new AmpyKernelLabView(this, settings, () -> {
+            if (theme != null) {
+                // Control changes immediately update app-only budgets/window request.
+                applyTheme();
+                refreshIdleTimer();
+            }
+        });
+        layout.addView(kernelLab, new LinearLayout.LayoutParams(-1, -2));
         spacer(18);
 
         saveButton = new Button(this);
@@ -198,13 +214,7 @@ public final class MainActivity extends Activity {
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
-        performanceSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                settings.edit().putInt("performance.profile", position).apply();
-                if (theme != null) applyTheme();
-            }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
-        });
+
     }
 
     private interface ProgressAction { void change(int value); }
@@ -293,18 +303,28 @@ public final class MainActivity extends Activity {
         if (theme == null) return;
         getWindow().getDecorView().setBackgroundColor(theme.background);
         layout.setBackgroundColor(theme.background);
-        int mode = settings.getInt("performance.profile", PerformancePolicy.BALANCED);
+        int mode = kernelLab.getProfile();
         int thermal = performanceSnapshot == null ? -1 : performanceSnapshot.thermal;
         boolean saver = performanceSnapshot != null && performanceSnapshot.batterySaver;
         int battery = performanceSnapshot == null ? -1 : performanceSnapshot.batteryPercent;
         boolean charging = performanceSnapshot != null && performanceSnapshot.charging;
         PerformancePolicy.Budget budget = PerformancePolicy.resolve(mode, thermal,
-                saver, battery, charging);
-        boolean reduceMotion = reducedMotionSwitch.isChecked() || budget.forceReducedMotion;
+                saver, battery, charging, kernelLab.isThermalAdaptationEnabled());
+        boolean reduceMotion = reducedMotionSwitch.isChecked() || budget.forceReducedMotion
+                || standbyIdle;
         preview.setProfile(theme, radarSwitch.isChecked(), reduceMotion,
                 Math.min(glowBar.getProgress(), budget.maxGlowPercent) / 100f,
                 Math.min(radarSpeedBar.getProgress(), budget.maxRadarSpeed));
-        preview.setFrameRateLimit(budget.targetFps);
+        int desiredHz = Math.min(kernelLab.getTargetHz(), budget.targetFps);
+        preview.setFrameRateLimit(standbyIdle ? 15 : desiredHz);
+        preview.setVisibleAnimation(appForeground && !standbyIdle);
+        // A preferred rate is a hint for THIS window only. Android may ignore
+        // it based on device modes, power saver, thermal policy and other apps.
+        float windowHz = appForeground && !standbyIdle ? desiredHz : 0f;
+        setWindowRefreshPreference(windowHz);
+        float actualHz = performanceSnapshot == null ? -1f : performanceSnapshot.refreshRate;
+        kernelLab.showState(budget, desiredHz, actualHz, standbyIdle, performanceSnapshot);
+        kernelLab.applyPalette(theme);
         float[] customRadii = new float[8];
         for (int i = 0; i < cornerBars.length; i++) {
             float radius = dp(cornerBars[i].getProgress());
@@ -312,14 +332,6 @@ public final class MainActivity extends Activity {
             customRadii[2 * i + 1] = radius;
         }
         preview.setCornerRadii(customRadii);
-        if (performanceStatus != null) {
-            performanceStatus.setText("Richiesto: " + PerformancePolicy.name(budget.requestedProfile)
-                    + "  →  Effettivo: " + PerformancePolicy.name(budget.effectiveProfile)
-                    + " · " + budget.targetFps + " FPS max anteprima\n" + budget.reason);
-        }
-        if (performanceDiagnostics != null && performanceSnapshot != null) {
-            performanceDiagnostics.setText(performanceSnapshot.describe());
-        }
         saveButton.setTextColor(theme.background);
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(theme.accent);
@@ -334,15 +346,79 @@ public final class MainActivity extends Activity {
                 radarSwitch.isChecked() ? "ON" : "OFF"));
     }
 
-    @Override protected void onPause() {
+    private void setWindowRefreshPreference(float hz) {
+        if (Math.abs(appliedWindowHz - hz) < 0.1f) return;
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.preferredDisplayModeId = 0;
+        params.preferredRefreshRate = hz;
+        getWindow().setAttributes(params);
+        appliedWindowHz = hz;
+    }
+
+    private void refreshIdleTimer() {
+        standbyHandler.removeCallbacks(idleAction);
+        if (appForeground && kernelLab != null && kernelLab.isStandbyEnabled()) {
+            if (standbyIdle) leaveIdle();
+            standbyHandler.postDelayed(idleAction, IDLE_TIMEOUT_MS);
+        } else if (standbyIdle && appForeground) {
+            // Disabling the optional saver only resumes while actually visible.
+            leaveIdle();
+        }
+    }
+
+    private void enterIdle() {
+        if (standbyIdle) return;
+        standbyIdle = true;
+        standbyHandler.removeCallbacks(idleAction);
         if (performanceMonitor != null) performanceMonitor.stop();
         if (preview != null) preview.setVisibleAnimation(false);
+        if (theme != null) applyTheme();
+    }
+
+    private void leaveIdle() {
+        if (!appForeground || !standbyIdle) return;
+        standbyIdle = false;
+        if (performanceMonitor != null) performanceMonitor.start();
+        if (theme != null) applyTheme();
+        refreshIdleTimer();
+    }
+
+    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+        // Resume the preview when the user touches a control or the screen.
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN && appForeground) {
+            if (standbyIdle) leaveIdle();
+            else refreshIdleTimer();
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    @Override protected void onPause() {
+        appForeground = false;
+        standbyHandler.removeCallbacks(idleAction);
+        if (screenReceiverRegistered) {
+            unregisterReceiver(screenReceiver);
+            screenReceiverRegistered = false;
+        }
+        if (performanceMonitor != null) performanceMonitor.stop();
+        if (preview != null) preview.setVisibleAnimation(false);
+        setWindowRefreshPreference(0f); // Return control to Android.
         super.onPause();
     }
+
     @Override protected void onResume() {
         super.onResume();
-        if (preview != null) preview.setVisibleAnimation(true);
+        appForeground = true;
+        registerReceiver(screenReceiver,
+                new IntentFilter(Intent.ACTION_SCREEN_OFF));
+        screenReceiverRegistered = true;
         if (performanceMonitor != null) performanceMonitor.start();
+        PowerManager power = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (power != null && !power.isInteractive()) enterIdle();
+        else {
+            standbyIdle = false;
+            if (theme != null) applyTheme();
+            refreshIdleTimer();
+        }
     }
 
     private TextView label(String value, int sp, boolean bold) {

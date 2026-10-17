@@ -38,7 +38,7 @@ public final class PerformancePolicy {
     public static Budget resolve(int requested, int thermalStatus, boolean powerSaver,
                                  int batteryPercent, boolean charging) {
         return resolve(requested, thermalStatus, powerSaver, batteryPercent,
-                charging, true);
+                charging, false);
     }
 
     /**

@@ -21,7 +21,7 @@ import java.util.Locale;
  * platform power-save switches. The Window requests a preferred refresh rate.
  */
 final class AmpyKernelLabView extends LinearLayout {
-    static final String KEY_PROFILE = "kernel.profile";
+    static final String KEY_PROFILE = "performance.profile";
     static final String KEY_DISPLAY_HZ = "kernel.display_hz";
     static final String KEY_STANDBY = "kernel.standby_saver";
     static final String KEY_ADAPTIVE = "kernel.adaptive_thermal";
