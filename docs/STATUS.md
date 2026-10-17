@@ -32,7 +32,8 @@ stages AmpyCore after vendor extraction. Upstream OTA server remains disabled.
 | AmpyCam | Camera2 RAW_SENSOR preview, DngCreator save, local themes | APK compile and actual camera DNG captures |
 | AmpyBoot | Original morphing SVG generator, optional CairoSVG PNG and ZIP packager | Boot animation playback on device |
 | OTA | Dev configuration only | Independent signing, updater, server, AB OTA |
-| AmpyRaw CR3 | **Not implemented** | LibRaw integration + safety/licensing review |
+| AmpyRaw photo editor | Basic native preview/edit/export source added | APK compile, export resolution/quality/device tests |
+| AmpyRaw CR3/DNG decoder | **Not implemented** | LibRaw integration + safety/licensing review |
 | AmpyConnect | **Not implemented** | Secure local protocol support |
 | AmpyLauncher / SystemUI | **Not implemented** | Reproducible framework patches and tests |
 | Secure root variant | **Not implemented** | Threat model / signing review |

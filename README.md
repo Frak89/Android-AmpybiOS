@@ -93,3 +93,16 @@ runner allocation. You do not need root or a flashed ROM to test AmpyCore.
 
 Android Studio: open `apps/AmpyCore` or `apps/AmpyCam` independently.
 Neither project is a flashable firmware image. See [APK build notes](docs/BUILD_APK.md).
+
+## Experimental Android app modules
+
+- [AmpyRaw](apps/AmpyRaw/README.md): non-destructive Android-native editing
+  of JPEG/PNG/WebP/HEIF (when decoded by the OS), export a separate JPEG copy.
+  Canon CR3/DNG **decoder not yet available**.
+- [AmpyCam](apps/AmpyCam/README.md): Camera2 RAW_SENSOR DNG capture prototype.
+- [AmpyCore](apps/AmpyCore/README.md): theme and performance profiles.
+
+All three are separate Android Studio projects and are **not confirmed
+compiled**. Opt into packaging Cam/Raw in an AOSP development ROM with
+`AMPY_INCLUDE_CAM=1 AMPY_INCLUDE_RAW=1` (disabled by default); see
+[Android source integration](docs/SOURCE_INTEGRATION.md).

@@ -6,8 +6,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="${AMPY_ANDROID_APP:-AmpyCore}"
 case "$APP" in
-  AmpyCore|AmpyCam) ;;
-  *) echo "Only AmpyCore/AmpyCam standalone debug builds are allowed" >&2; exit 2 ;;
+  AmpyCore|AmpyCam|AmpyRaw) ;;
+  *) echo "Only AmpyCore/AmpyCam/AmpyRaw standalone debug builds are allowed" >&2; exit 2 ;;
 esac
 PROJECT="$ROOT/apps/$APP"
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"

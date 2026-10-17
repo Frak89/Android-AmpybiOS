@@ -53,3 +53,21 @@ handling have been verified. AmpyRaw and AmpyConnect remain future modules. Thei
 ## Release and patch strategy
 
 The stable manifest `2026100600` is pinned by the signed `repo init` tag. AmpyCore overlays are reapplied from this repo after source updates; the script is designed to be idempotent and fails for unmanaged vendor paths. SystemUI and framework changes will be maintained as separately reviewed, versioned patches and must be rebuilt/tested against each new GrapheneOS tag. This cannot provide automatic compatibility with arbitrary upstream changes.
+
+### Optional additional apps (developer builds only)
+
+`AmpyCore` is the default product addition. The unverified standalone
+`AmpyCam` and `AmpyRaw` Soong modules can be staged **explicitly**:
+
+```bash
+AMPY_INCLUDE_CAM=1 AMPY_INCLUDE_RAW=1 \
+    bash scripts/integrate_grapheneos.sh "$HOME/grapheneos-2026100600" --dry-run
+AMPY_INCLUDE_CAM=1 AMPY_INCLUDE_RAW=1 \
+    bash scripts/integrate_grapheneos.sh "$HOME/grapheneos-2026100600"
+```
+
+The script copies only the app's Java/resources/assets/manifest into managed
+`vendor/ampybios/apps` folders and appends **opt-in**
+`PRODUCT_PACKAGES` entries. Neither app gets privileged/system UID rights.
+The flags default to 0 until builds and Pixel tests pass. The signature-protected
+theme sync requires the modules to be signed by the same key.

@@ -1,0 +1,11 @@
+// AmpybiOS optional app: explicit opt-in for development builds only.
+// No privileged UID, root access, platform APIs or third-party libraries.
+android_app {
+    name: "AmpyRaw",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    asset_dirs: ["assets"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "current",
+    product_specific: true,
+}
