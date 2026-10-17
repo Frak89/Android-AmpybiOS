@@ -82,7 +82,7 @@ public final class CameraActivity extends Activity {
         @Override public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int w, int h) {}
         @Override public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
             Handler handler = cameraHandler;
-            if (handler != null) handler.post(this::closeCamera);
+            if (handler != null) handler.post(CameraActivity.this::closeCamera);
             else closeCamera();
             return true;
         }
