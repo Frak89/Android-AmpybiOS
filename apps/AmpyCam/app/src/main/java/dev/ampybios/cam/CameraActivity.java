@@ -324,7 +324,18 @@ public final class CameraActivity extends Activity {
             Size[] previewSizes = map.getOutputSizes(SurfaceTexture.class);
             if (previewSizes == null || previewSizes.length == 0) throw new IllegalStateException(
                     "Camera preview is unavailable");
-            Size previewSize = previewSizes[0];
+            // RAW + PREVIEW combinations may reject huge TextureView surfaces.
+            // Prefer the largest standard preview size up to Full HD.
+            Size previewSize = null;
+            for (Size size : previewSizes) {
+                if (size.getWidth() <= 1920 && size.getHeight() <= 1080 &&
+                        (previewSize == null ||
+                         (long) size.getWidth() * size.getHeight() >
+                         (long) previewSize.getWidth() * previewSize.getHeight())) {
+                    previewSize = size;
+                }
+            }
+            if (previewSize == null) previewSize = previewSizes[0];
             st.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
             previewSurface = new Surface(st);
             device.createCaptureSession(Arrays.asList(previewSurface, rawReader.getSurface()),
