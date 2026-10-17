@@ -81,7 +81,14 @@ final class AmpyKernelLabView extends LinearLayout {
         hzSlider.setProgress((getTargetHz() - 60) / 30);
         hzSlider.setContentDescription("Frequenza obiettivo AmpyCore, da 60 a 120 Hz");
         addView(hzSlider, new LayoutParams(-1, dp(42)));
-        addView(text("60 Hz                   90 Hz                  120 Hz", 11, false));
+        LinearLayout ticks = new LinearLayout(context);
+        ticks.setOrientation(HORIZONTAL);
+        for (String label : new String[]{"60 Hz", "90 Hz", "120 Hz"}) {
+            TextView tick = text(label, 11, false);
+            tick.setGravity(Gravity.CENTER);
+            ticks.addView(tick, new LayoutParams(0, dp(22), 1f));
+        }
+        addView(ticks);
         space(8);
 
         standbySwitch = toggle("Risparmio quando inattivo", isStandbyEnabled());
@@ -163,7 +170,8 @@ final class AmpyKernelLabView extends LinearLayout {
                 + desiredHz + " Hz preferiti dalla finestra · Display " + actual);
         diagnostic.setText(snapshot == null
                 ? "Monitor in avvio: nessun campione disponibile"
-                : snapshot.describe());
+                : (standbyIdle ? "Monitor sospeso · Ultima lettura:\n" : "")
+                        + snapshot.describe());
     }
 
     void applyPalette(ThemeProfile theme) {

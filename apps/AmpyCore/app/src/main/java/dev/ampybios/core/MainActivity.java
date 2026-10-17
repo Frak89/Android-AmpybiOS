@@ -3,9 +3,7 @@ package dev.ampybios.core;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +28,6 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -81,9 +78,6 @@ public final class MainActivity extends Activity {
             if (Intent.ACTION_SCREEN_OFF.equals(action.getAction())) {
                 // Safety: stop the app's animation regardless of the optional toggle.
                 enterIdle();
-            } else if (Intent.ACTION_SCREEN_ON.equals(action.getAction())
-                    && appForeground) {
-                leaveIdle();
             }
         }
     };
