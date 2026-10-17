@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "AmpyCore UI rendering only until ROM-level control is designed and tested",
+  "scope": "AmpyCore window refresh preference and radar rendering only (NOT actual kernel CPU/GPU policy)",
   "device": "cheetah",
   "modes": [
     {
@@ -23,11 +23,13 @@
     }
   ],
   "adaptive_safety": {
-    "thermal_status_gte_2": "limit to balanced",
-    "thermal_status_gte_3": "limit to eco",
-    "thermal_status_gte_4": "force reduced motion",
-    "android_battery_saver": "limit to eco",
-    "battery_percent_below_15_while_not_charging": "limit to eco"
+    "thermal_status_light_when_proactive": "limit to balanced",
+    "thermal_status_moderate_when_proactive": "limit to eco",
+    "thermal_status_moderate_when_disabled": "still limit to balanced",
+    "thermal_status_severe_or_higher": "always limit to eco",
+    "thermal_status_critical_or_higher": "always reduce motion",
+    "android_battery_saver": "always limit to eco",
+    "battery_percent_below_15_while_not_charging": "always limit to eco"
   },
   "security": {
     "root_required": false,
@@ -35,5 +37,30 @@
     "adb_required": false,
     "background_monitoring": false,
     "selinux_modification": false
+  },
+  "defaults": {
+    "profile": "fusion-extreme",
+    "display_target_hz": 120,
+    "standby_saver": true,
+    "standby_idle_timeout_seconds": 30,
+    "proactive_thermal_adaptation": true
+  },
+  "display": {
+    "api": "WindowManager.LayoutParams.preferredRefreshRate",
+    "request_is_advisory": true,
+    "possible_choices_hz": [
+      60,
+      90,
+      120
+    ],
+    "release_on_pause": true,
+    "actual_refresh_from": "Display.getRefreshRate"
+  },
+  "standby_behavior": {
+    "app_only": true,
+    "animation_paused_in_background_always": true,
+    "radar_paused_after_inactive_seconds": 30,
+    "monitor_paused_while_idle": true,
+    "system_power_saver_modified": false
   }
 }

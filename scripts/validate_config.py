@@ -42,6 +42,12 @@ def validate(root: Path = ROOT) -> None:
     assert [p["max_radar_speed_dps"] for p in performance["modes"]] == [45, 180, 360]
     assert performance["security"]["root_required"] is False
     assert performance["security"]["kernel_governor_changes"] is False
+    assert performance["defaults"]["profile"] == "fusion-extreme"
+    assert performance["defaults"]["display_target_hz"] == 120
+    assert performance["defaults"]["standby_saver"] is True
+    assert performance["defaults"]["proactive_thermal_adaptation"] is True
+    assert performance["display"]["request_is_advisory"] is True
+    assert performance["standby_behavior"]["system_power_saver_modified"] is False
     themes = sorted((root / "config/themes").glob("*.json"))
     assert {p.stem for p in themes} == {"fusion", "cyberpunk", "minimal", "futuristic"}
     for path in themes:

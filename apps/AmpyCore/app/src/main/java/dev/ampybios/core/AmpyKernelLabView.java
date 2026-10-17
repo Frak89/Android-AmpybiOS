@@ -59,10 +59,10 @@ final class AmpyKernelLabView extends LinearLayout {
             button.setId(android.view.View.generateViewId());
             button.setText(names[i]);
             button.setTextSize(12);
-            button.setGravity(Gravity.CENTER_VERTICAL);
+            button.setGravity(Gravity.CENTER);
             button.setSingleLine(true);
-            button.setButtonTintList(android.content.res.ColorStateList.valueOf(
-                    Color.rgb(52, 220, 236)));
+            button.setButtonDrawable((android.graphics.drawable.Drawable) null);
+            button.setPadding(dp(3), 0, dp(3), 0);
             profileButtons[i] = button;
             profiles.addView(button, new RadioGroup.LayoutParams(0, dp(50), 1f));
         }
@@ -178,7 +178,15 @@ final class AmpyKernelLabView extends LinearLayout {
         preferredHz.setTextColor(theme.accent);
         diagnostic.setTextColor(theme.foreground);
         scope.setTextColor(theme.secondary);
-        for (RadioButton b : profileButtons) b.setTextColor(theme.foreground);
+        for (RadioButton b : profileButtons) {
+            boolean selected = b.isChecked();
+            GradientDrawable shape = new GradientDrawable();
+            shape.setColor(selected ? theme.accent : theme.background);
+            shape.setStroke(dp(1), selected ? theme.accent : theme.secondary);
+            shape.setCornerRadius(dp(12));
+            b.setBackground(shape);
+            b.setTextColor(selected ? theme.background : theme.foreground);
+        }
         standbySwitch.setTextColor(theme.foreground);
         adaptiveSwitch.setTextColor(theme.foreground);
     }

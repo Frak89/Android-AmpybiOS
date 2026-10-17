@@ -32,3 +32,24 @@ the original theme defaults. This is local, standalone Android UI, not global
 SystemUI modification.
 
 See [local APK build and troubleshooting](../../docs/BUILD_APK.md).
+
+## AmpyKernel Lab — Fusion Extreme preset
+
+A dedicated theme-aware panel in AmpyCore offers Eco / Balanced / Fusion
+Extreme with **Fusion Extreme as the default on fresh installs**, a **120 Hz
+target** and enabled-by-default toggles for:
+- **Standby Saver:** pause optional radar animation and the foreground-only
+  diagnostics sampler after 30 seconds without touch; always stop on app pause,
+  and immediately on screen-off. Touch reactivates them.
+- **Proactive Thermal Adaptation:** reduce optional effects already at thermal
+  LIGHT and MODERATE statuses. Turning off this proactive layer **does not**
+  disable compulsory fallback at MODERATE, SEVERE, CRITICAL or system battery
+  saver.
+
+The application requests its own window's refresh rate through
+`WindowManager.LayoutParams.preferredRefreshRate` (60/90/120 Hz), and displays
+the Android-reported actual refresh rate. **120 Hz is not guaranteed.**
+Android may ignore the preference for power/thermal/display considerations.
+No global refresh setting, CPU/GPU frequency, device power saver, root, SELinux
+or kernel setting is modified. The previous user-selected performance profile
+is preserved across upgrades.

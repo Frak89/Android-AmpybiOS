@@ -35,3 +35,24 @@ Developers can run host-policy unit tests:
 ```bash
 bash scripts/test_performance_policy.sh
 ```
+
+## AmpyKernel Lab user-facing controls (app scope only)
+
+The new `AmpyKernelLabView` renders three profile controls and an app-window
+refresh target (60/90/120 Hz). Factory defaults for this prototype are
+**Fusion Extreme / 120 Hz / Standby Saver ON / Proactive Thermal ON**. The
+saved profile from previous AmpyCore installations is honored.
+
+`WindowManager.LayoutParams.preferredRefreshRate` is an OS hint scoped to
+the AmpyCore window; 120 Hz is not a device-wide setting nor a guarantee of
+actual refresh rate. The actual display rate is read separately. The request
+is cleared when paused or after 30 seconds of user inactivity with standby
+saving enabled.
+
+Android PowerManager thermal statuses continue to cap Eco/Balance as needed.
+The proactive switch only controls *early app effects reductions*; critical
+protections and system Battery Saver cannot be disabled.
+
+No battery savings or GPU/CPU improvements are claimed until measured on an
+actual Pixel 7 Pro. The feature does NOT apply the AmpyKernel experimental
+Linux scheduler patch from `kernel/AmpyKernel`.

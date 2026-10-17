@@ -22,6 +22,28 @@ class AmpyCoreSourceTests(unittest.TestCase):
         self.assertIn("preview.setCornerRadii(customRadii)", java)
         self.assertIn('".corner." + i', java)
 
+    def test_ampykernel_lab_defaults_and_native_system_guards(self):
+        root = ROOT / "apps/AmpyCore/app/src/main/java/dev/ampybios/core"
+        lab = (root / "AmpyKernelLabView.java").read_text()
+        activity = (root / "MainActivity.java").read_text()
+        policy = (root / "PerformancePolicy.java").read_text()
+        self.assertIn("class AmpyKernelLabView", lab)
+        self.assertIn("PerformancePolicy.FUSION_EXTREME", lab)
+        self.assertIn('settings.getInt(KEY_DISPLAY_HZ, 120)', lab)
+        self.assertIn('settings.getBoolean(KEY_STANDBY, true)', lab)
+        self.assertIn('settings.getBoolean(KEY_ADAPTIVE, true)', lab)
+        self.assertIn('WindowManager.LayoutParams', activity)
+        self.assertIn("params.preferredRefreshRate = hz", activity)
+        self.assertIn("setWindowRefreshPreference(0f)", activity)
+        self.assertIn("IDLE_TIMEOUT_MS = 30_000L", activity)
+        self.assertIn("performanceMonitor.stop()", activity)
+        self.assertIn("if (thermalStatus >= 3)", policy)
+        self.assertIn("if (powerSaver && effective > ECO)", policy)
+        for forbidden in ("android.permission.WRITE_SECURE_SETTINGS", 
+                          "android.permission.DEVICE_POWER", "android.permission.WAKE_LOCK"):
+            manifest = (ROOT / "apps/AmpyCore/app/src/main/AndroidManifest.xml").read_text()
+            self.assertNotIn(forbidden, manifest)
+
     def test_local_build_instructions(self):
         self.assertTrue((ROOT / "scripts/build_ampycore_local.sh").exists())
         self.assertTrue((ROOT / "docs/BUILD_APK.md").exists())
