@@ -51,3 +51,41 @@ The filesystem staging directory is private to the app. The system installer
 must eventually be separately reviewed and shipped as an AmpybiOS-signed
 privileged service using Android's A/B update_engine. There is no approved
 device-flashing implementation in this app.
+
+## RAM-only immediate import
+
+AmpyRec can now use a **direct in-memory route**:
+
+1. User selects a ZIP using Android's document picker.
+2. The ZIP is read into a bounded `byte[]` (hard cap **256 KiB**).
+3. `ZipInputStream` checks entry paths, duplicate names, inflated sizes,
+   allowlisted JSON schemas and per-file SHA-256.
+4. A signer-matched, synchronous content-provider call imports the verified
+   theme into AmpyCore. Only AmpyCore persists the newly active theme data.
+5. AmpyRec returns success only if AmpyCore acknowledges that exact revision.
+
+This avoids both a temporary ZIP copy and an app-private ZIP staging write;
+heap allocations still consume RAM, and the selected original file remains
+where the user stored it. The mode is immediate only: **RAM does not survive
+reboot, OS memory reclaim, app crashes or power loss**. Deferred/background
+mode uses app-private persistent storage instead and can therefore resume.
+
+No path in either mode modifies user media, user files, encryption keys, OS
+partitions or the Android filesystem outside the participating apps' private
+directories.
+
+### Retention of user data across genuine ROM updates
+
+An OTA signed with the **existing AmpybiOS release keys** and compatible
+with the current install can normally update the inactive A/B slot and retain
+user data. It is not a guarantee without release/rollback tests.
+
+A **first-time switch from official GrapheneOS to independently signed
+AmpybiOS requires unlocking/installation and a data wipe**. The bootloader
+unlock (and subsequent lock) explicitly wipe data. No recovery/RAM trick or
+partition copy can honestly promise to preserve the existing encrypted data
+during that change. Back up everything externally before a ROM migration.
+
+Do not stage full OTA ZIPs into device RAM or create an unofficial
+RAM-backed boot partition; use signed Android A/B streaming update support
+from a privileged updater component in an installed AmpybiOS ROM.

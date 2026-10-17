@@ -55,6 +55,16 @@ class AmpyRecContractTests(unittest.TestCase):
         self.assertIn('android:authorities="dev.ampybios.core.themes"',coreManifest)
         self.assertIn('content://', (APP / "java/dev/ampybios/rec/RecState.java").read_text())
 
+    def test_memory_only_flow_has_no_staging_write(self):
+        scanner=(APP / "java/dev/ampybios/rec/RamPackageScanner.java").read_text()
+        state=(APP / "java/dev/ampybios/rec/RecState.java").read_text()
+        self.assertIn("ZipInputStream",scanner)
+        self.assertIn("MAX_ZIP_BYTES = 256 * 1024",scanner)
+        self.assertIn("applyDirectFromRam",state)
+        self.assertIn("RamPackageScanner.inspect(memory.toByteArray())",state)
+        self.assertIn("deliverToCore(context,report)",state)
+        self.assertTrue((APP.parent / "test/java/dev/ampybios/rec/RamPackageScannerTest.java").is_file())
+
     def test_apk_workflow(self):
         self.assertTrue((ROOT/".github/workflows/ampyrec-apk.yml").is_file())
         self.assertTrue((ROOT/"scripts/build_ampyrec_local.sh").is_file())

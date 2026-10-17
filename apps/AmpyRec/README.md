@@ -47,6 +47,21 @@ Only after confirming that response does AmpyRec mark the update **applied**.
 On error it remains staged for explicit retry. **Both APKs must share the
 same signing certificate**. AmpyRAW remains independent.
 
+## Memory-only immediate import
+
+The screen now offers **Applica LIVE direttamente da RAM**. This never writes
+a temporary ZIP to app-private storage: the selected compressed file is read
+into app heap memory (maximum 256 KiB) and validated with `ZipInputStream`,
+then sent to AmpyCore with same-signer authentication and an acknowledged
+versioned import. The active config needs a small persistent copy **inside
+AmpyCore**; not even a RAM-only path can persist customization without some
+storage.
+
+For **reboot-resumable jobs**, select persistent staging instead. Private
+app storage is used; user photos, documents and existing apps are never
+deleted. A first-time custom ROM installation is fundamentally different:
+unlocking the bootloader wipes data, so export backups first.
+
 ## The three buttons after verifying a LIVE ZIP
 
 - **Applica ora:** execute safely within this app's UI; no reboot.
