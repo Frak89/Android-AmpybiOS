@@ -1,0 +1,40 @@
+name: AmpyRec debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/AmpyRec/**'
+      - 'scripts/build_ampyrec_local.sh'
+      - 'scripts/build_ampycore_local.sh'
+      - '.github/workflows/ampyrec-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android 17 SDK
+        run: sdkmanager "platforms;android-37"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.4.1'
+      - name: Check local build prerequisites
+        run: bash scripts/build_ampyrec_local.sh --doctor
+      - name: Compile AmpyRec debug APK
+        run: bash scripts/build_ampyrec_local.sh build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AmpyRec-debug-apk
+          path: apps/AmpyRec/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
