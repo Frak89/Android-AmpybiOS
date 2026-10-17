@@ -70,11 +70,14 @@ public final class RecState {
                 RecPackage.Report report = RecPackage.inspect(tmp);
                 // Arbitrary source ZIP and unsigned system OTA are read-only analysis.
                 if (report.kind != RecPackage.Kind.LIVE_THEME) {
+                    String previousReference=prefs(context).getString("source_uri","");
                     // A newly selected non-installable archive invalidates old
                     // pending state: the UI must never offer applying an older ZIP.
                     cancelJob(context);
                     prefs(context).edit().remove("state").remove("hash")
-                            .remove("kind").remove("message").commit();
+                            .remove("kind").remove("message").remove("mode")
+                            .remove("source_uri").commit();
+                    releaseReference(context,previousReference);
                     if (dest.exists() && !dest.delete())
                         throw new IOException("Impossibile eliminare staging precedente");
                     return report;
@@ -98,6 +101,7 @@ public final class RecState {
                     }
                     backup.delete();
                 }
+                String previousReference=prefs(context).getString("source_uri","");
                 boolean persisted = prefs(context).edit()
                         .putString("mode", "disk")
                         .remove("source_uri")
@@ -107,6 +111,7 @@ public final class RecState {
                         .putString("message", report.description)
                         .commit();
                 if (!persisted) throw new IOException("Impossibile salvare lo stato");
+                releaseReference(context,previousReference);
                 return report;
             } finally {
                 // Never retain unknown/executable/source ZIPs in private storage.
@@ -239,8 +244,10 @@ public final class RecState {
                 releaseReference(context,old);
             // Older disk staging is no longer part of the active transaction.
             File oldZip=staged(context);
-            if (oldZip.exists() && !oldZip.delete())
-                throw new IOException("Impossibile eliminare ZIP duplicato precedente");
+            if (oldZip.exists() && !oldZip.delete()) {
+                preferences.edit().putString("message",
+                        "Riferimento salvato, ma la vecchia copia ZIP va rimossa").commit();
+            }
         }
         return report;
     }
