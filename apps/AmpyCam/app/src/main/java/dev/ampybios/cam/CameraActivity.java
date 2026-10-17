@@ -355,6 +355,7 @@ public final class CameraActivity extends Activity {
                 if ((long) size.getWidth() * size.getHeight() >
                         (long) raw.getWidth() * raw.getHeight()) raw = size;
             }
+            final Size selectedRawSize = raw;
             rawReader = ImageReader.newInstance(raw.getWidth(), raw.getHeight(),
                     ImageFormat.RAW_SENSOR, 2);
             rawReader.setOnImageAvailableListener(this::onRawAvailable, cameraHandler);
@@ -393,7 +394,8 @@ public final class CameraActivity extends Activity {
                                 configured.setRepeatingRequest(preview.build(), null, cameraHandler);
                                 canCapture(true);
                                 runOnUiThread(() -> details.setText(
-                                        raw.getWidth() + " × " + raw.getHeight() +
+                                        selectedRawSize.getWidth() + " × " +
+                                        selectedRawSize.getHeight() +
                                         " · DNG · senza cloud"));
                                 show("Pronta: salvataggio in Pictures/AmpyCam");
                             } catch (CameraAccessException | IllegalStateException e) {
@@ -416,6 +418,7 @@ public final class CameraActivity extends Activity {
     private void takeRawPicture() {
         if (!activityVisible || session == null || device == null ||
                 cameraHandler == null || capturePending) return;
+        final Handler callbackHandler = cameraHandler;
         capturePending = true;
         final long generation = ++captureGeneration;
         canCapture(false);
@@ -434,10 +437,10 @@ public final class CameraActivity extends Activity {
                         CaptureRequest request, android.hardware.camera2.CaptureFailure failure) {
                     clearPending("Scatto RAW non riuscito");
                 }
-            }, cameraHandler);
+            }, callbackHandler);
             // Recover the shutter even when a device delivers neither a result
             // nor a failure callback. Executed on the same camera worker queue.
-            cameraHandler.postDelayed(() -> {
+            callbackHandler.postDelayed(() -> {
                 if (capturePending && captureGeneration == generation) {
                     clearPending("Timeout acquisizione RAW");
                 }
