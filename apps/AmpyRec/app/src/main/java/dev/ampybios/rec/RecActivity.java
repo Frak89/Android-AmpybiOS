@@ -173,7 +173,10 @@ public final class RecActivity extends Activity {
     private void pickSourceZip() {
         Intent open = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         open.addCategory(Intent.CATEGORY_OPENABLE);
-        open.setType("application/zip");
+        open.setType("*/*");
+        open.putExtra(Intent.EXTRA_MIME_TYPES,
+                new String[]{"application/zip","application/x-zip-compressed",
+                        "application/octet-stream"});
         open.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
                 Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         // This is a picker hint, not unrestricted filesystem access.
