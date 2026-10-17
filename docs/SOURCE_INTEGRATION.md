@@ -79,3 +79,11 @@ The standalone `AmpyConnect` development module can also be staged with
 `GET /api/states` for a Home Assistant server, stores no access token, and
 does not control equipment. It needs the normal `INTERNET` permission,
 not Android privileged permissions. All optional modules still default to off.
+
+### Optional AmpyLauncher
+
+`AMPY_INCLUDE_LAUNCHER=1` stages the standalone HOME candidate app, not an
+automatic replacement for the user's default launcher. Android's Settings
+remains the only way to choose the default Home. The app can launch visible
+installed apps using Android's official package-visibility API. It uses no
+`QUERY_ALL_PACKAGES`, no root and no full-screen overlay permission.

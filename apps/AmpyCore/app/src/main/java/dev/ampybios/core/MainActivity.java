@@ -263,7 +263,7 @@ public final class MainActivity extends Activity {
             // and cannot modify other apps or Android SystemUI.
             for (String target : new String[]{
                     "dev.ampybios.cam", "dev.ampybios.raw",
-                    "dev.ampybios.connect"}) {
+                    "dev.ampybios.connect", "dev.ampybios.launcher"}) {
                 Intent themeChange = new Intent(SKIN_ACTION);
                 themeChange.setPackage(target);
                 themeChange.putExtra("theme", id);

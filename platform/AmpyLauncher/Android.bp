@@ -1,0 +1,10 @@
+// Optional unprivileged HOME candidate, never a privileged SystemUI replacement.
+android_app {
+    name: "AmpyLauncher",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    asset_dirs: ["assets"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "current",
+    product_specific: true,
+}

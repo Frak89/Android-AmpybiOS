@@ -27,3 +27,7 @@ This is a local IPC prototype, **not global Android/SystemUI skinning**.
 `AmpyConnect` now uses the same signing-protected broadcast and the same four
 JSON skins. Its Home Assistant bearer token is strictly ephemeral and is never
 included in theme messages.
+
+`AmpyLauncher` uses the same signature-protected theme broadcast and local
+per-app override. All installed AmpybiOS apps must use the same signing
+certificate for this optional IPC; a mismatched certificate fails closed.

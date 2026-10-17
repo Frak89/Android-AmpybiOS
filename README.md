@@ -119,3 +119,8 @@ python3 scripts/check_build_host.py ~/src/grapheneos-2026100600
 bash scripts/build_ampybios_dev.sh ~/src/grapheneos-2026100600 --dry-run
 ```
 Neither command flashes a device or signs a production ROM.
+
+- [AmpyLauncher](apps/AmpyLauncher/README.md): standalone HOME candidate
+  with themeable app drawer, search, clock and battery. Opt in for experimental
+  ROM staging with `AMPY_INCLUDE_LAUNCHER=1`; Android does **not**
+  automatically change the default Home app.

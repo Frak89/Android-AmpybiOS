@@ -15,7 +15,9 @@
 - [ ] Installable Android AmpyCore prototype with persisted themes and previews
 - [ ] Organic corners, animated radar border and system integration contract
 - [ ] Import SVG templates with safe validation and fallback
-- [ ] Launch screen, status bar long-press, safe-mode escape and AmpyLauncher
+- [x] Standalone AmpyLauncher HOME candidate source with app drawer/search/clock/battery
+- [ ] AmpyLauncher APK compilation and device HOME fallback/recovery tests
+- [ ] SystemUI status bar long-press, global overlays and advanced launcher animations
 
 ## M2 — SystemUI and boot
 - [ ] Patch SystemUI with adjustable Quick Settings, transitions, shape renderer

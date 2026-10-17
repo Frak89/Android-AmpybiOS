@@ -16,7 +16,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AMPY_INCLUDE_CAM="${AMPY_INCLUDE_CAM:-0}"
 AMPY_INCLUDE_RAW="${AMPY_INCLUDE_RAW:-0}"
 AMPY_INCLUDE_CONNECT="${AMPY_INCLUDE_CONNECT:-0}"
-for value in "$AMPY_INCLUDE_CAM" "$AMPY_INCLUDE_RAW" "$AMPY_INCLUDE_CONNECT"; do
+AMPY_INCLUDE_LAUNCHER="${AMPY_INCLUDE_LAUNCHER:-0}"
+for value in "$AMPY_INCLUDE_CAM" "$AMPY_INCLUDE_RAW" "$AMPY_INCLUDE_CONNECT" "$AMPY_INCLUDE_LAUNCHER"; do
   case "$value" in 0|1) ;; *) echo "Optional app flags accept only 0 or 1" >&2; exit 2;; esac
 done
 DEVICE="$TREE/device/google/pantah/device-cheetah.mk"
@@ -43,10 +44,11 @@ if [[ -n "${AMPY_BOOTANIMATION_ZIP:-}" ]]; then
   [[ -f "$AMPY_BOOTANIMATION_ZIP" ]] || { echo "Missing AMPY_BOOTANIMATION_ZIP" >&2; exit 4; }
   python3 "$ROOT/scripts/verify_bootanimation.py" "$AMPY_BOOTANIMATION_ZIP"
 fi
-for app in AmpyCam AmpyRaw AmpyConnect; do
+for app in AmpyCam AmpyRaw AmpyConnect AmpyLauncher; do
   enabled="$AMPY_INCLUDE_CAM"
   if [[ "$app" == AmpyRaw ]]; then enabled="$AMPY_INCLUDE_RAW"; fi
   if [[ "$app" == AmpyConnect ]]; then enabled="$AMPY_INCLUDE_CONNECT"; fi
+  if [[ "$app" == AmpyLauncher ]]; then enabled="$AMPY_INCLUDE_LAUNCHER"; fi
   if [[ "$enabled" == 1 ]]; then
     for required in "$ROOT/apps/$app/app/src/main/AndroidManifest.xml" \
         "$ROOT/platform/$app/Android.bp" "$ROOT/apps/$app/app/src/main/java"; do
@@ -56,7 +58,7 @@ for app in AmpyCam AmpyRaw AmpyConnect; do
 done
 if [[ "$DRY_RUN" == true ]]; then
   echo "DRY RUN: would stage AmpyCore native app into $TARGET"
-  echo "DRY RUN: optional AmpyCam=$AMPY_INCLUDE_CAM, AmpyRaw=$AMPY_INCLUDE_RAW, AmpyConnect=$AMPY_INCLUDE_CONNECT"
+  echo "DRY RUN: optional AmpyCam=$AMPY_INCLUDE_CAM, AmpyRaw=$AMPY_INCLUDE_RAW, AmpyConnect=$AMPY_INCLUDE_CONNECT, AmpyLauncher=$AMPY_INCLUDE_LAUNCHER"
   echo "DRY RUN: would add product include to $DEVICE (once)"
   exit 0
 fi
@@ -71,10 +73,11 @@ cp -R "$APP_SRC/res" "$TARGET/apps/AmpyCore/res"
 mkdir -p "$TARGET/apps/AmpyCore/assets"
 cp "$ROOT"/config/themes/*.json "$TARGET/apps/AmpyCore/assets/"
 cp "$PRODUCT_SRC" "$TARGET/product.mk"
-for app in AmpyCam AmpyRaw AmpyConnect; do
+for app in AmpyCam AmpyRaw AmpyConnect AmpyLauncher; do
   enabled="$AMPY_INCLUDE_CAM"
   if [[ "$app" == AmpyRaw ]]; then enabled="$AMPY_INCLUDE_RAW"; fi
   if [[ "$app" == AmpyConnect ]]; then enabled="$AMPY_INCLUDE_CONNECT"; fi
+  if [[ "$app" == AmpyLauncher ]]; then enabled="$AMPY_INCLUDE_LAUNCHER"; fi
   if [[ "$enabled" != 1 ]]; then continue; fi
   dest="$TARGET/apps/$app"
   source="$ROOT/apps/$app/app/src/main"
@@ -111,5 +114,5 @@ $(call inherit-product, vendor/ampybios/product.mk)
 MK
 fi
 
-echo "AmpyCore staged for Pixel 7 Pro; optional AmpyCam=$AMPY_INCLUDE_CAM, AmpyRaw=$AMPY_INCLUDE_RAW, AmpyConnect=$AMPY_INCLUDE_CONNECT."
+echo "AmpyCore staged for Pixel 7 Pro; optional AmpyCam=$AMPY_INCLUDE_CAM, AmpyRaw=$AMPY_INCLUDE_RAW, AmpyConnect=$AMPY_INCLUDE_CONNECT, AmpyLauncher=$AMPY_INCLUDE_LAUNCHER."
 echo "Not configured: root, unsigned OTA, third-party APK redistribution or system-wide theme hooks."

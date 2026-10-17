@@ -45,7 +45,7 @@ class GrapheneIntegrationTests(unittest.TestCase):
             envsetup.write_text("# mock\n")
             cmd = ["bash", str(ROOT / "scripts/integrate_grapheneos.sh"), str(source)]
             flags = {**os.environ, "AMPY_INCLUDE_CAM": "1", "AMPY_INCLUDE_RAW": "1",
-                     "AMPY_INCLUDE_CONNECT": "1"}
+                     "AMPY_INCLUDE_CONNECT": "1", "AMPY_INCLUDE_LAUNCHER": "1"}
             subprocess.run(cmd + ["--dry-run"], check=True, capture_output=True, env=flags)
             for _ in range(2):
                 subprocess.run(cmd, check=True, capture_output=True, env=flags)
@@ -53,7 +53,8 @@ class GrapheneIntegrationTests(unittest.TestCase):
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyCam"), 1)
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyRaw"), 1)
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyConnect"), 1)
-            for name in ("AmpyCam", "AmpyRaw", "AmpyConnect"):
+            self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyLauncher"), 1)
+            for name in ("AmpyCam", "AmpyRaw", "AmpyConnect", "AmpyLauncher"):
                 app = source / "vendor/ampybios/apps" / name
                 self.assertTrue((app / "Android.bp").is_file())
                 self.assertTrue((app / "AndroidManifest.xml").is_file())
