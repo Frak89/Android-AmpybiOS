@@ -54,7 +54,7 @@ public final class RecPackage {
 
     private static boolean validName(String s) {
         if (s == null || s.isEmpty() || s.length()>180 || s.startsWith("/") ||
-                s.contains("\\") || s.contains("\u0000") || s.startsWith("./") ||
+                s.contains("\\") || s.indexOf((char) 0) >= 0 || s.startsWith("./") ||
                 s.contains("//")) return false;
         for (String part : s.split("/")) {
             if (part.equals(".") || part.equals("..") || part.isEmpty()) return false;
@@ -175,6 +175,8 @@ public final class RecPackage {
                     throw new IOException("Hash SHA-256 non corrispondente: "+path);
                 String content=new String(data,java.nio.charset.StandardCharsets.UTF_8);
                 JSONObject json=new JSONObject(content);
+                if (json.getString("label").length()>60)
+                    throw new IOException("Etichetta tema troppo lunga");
                 if (json.getInt("schema")!=1 || !id.equals(json.getString("id")))
                     throw new IOException("Tema incompatibile");
                 JSONObject colors=json.getJSONObject("colors");
