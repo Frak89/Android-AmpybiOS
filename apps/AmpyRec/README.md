@@ -120,3 +120,28 @@ production release.
 contents, not its publisher. For unattended *system* updates, a separately
 pinned trusted signing key and verified A/B OTA pipeline are mandatory. AmpyRec
 does not claim to install source ZIPs, ROMs, kernels or SystemUI.
+
+## Reboot-safe update WITHOUT a second ZIP copy
+
+Choose **Seleziona ZIP · conserva solo riferimento, nessuna copia**. With
+Android's Storage Access Framework, AmpyRec asks the document provider for
+a **persistable read grant** and keeps only the `content://` URI, original
+SHA-256, and pending state in app-private preferences. The ZIP itself remains
+at its user-chosen location. The data is not copied into AmpyRec storage.
+
+On a later execution, including after a reboot, AmpyRec reopens the original
+document, checks the full ZIP digest and validates the themes again in memory.
+If the file was moved, replaced or permissions revoked, installation stops.
+JobScheduler still decides when background execution is allowed.
+
+Three distinct modes now exist:
+- RAM immediate: 256 KiB maximum; no ZIP staging on disk; not resumable.
+- SAF reference: 256 KiB maximum; no duplicate ZIP; resumable while original
+  document and read permission remain accessible.
+- Private ZIP: up to 512 MiB for analysis, only allowlisted LIVE themes are
+  installable; stores a copy to enable robust deferred operation.
+
+No mode can modify firmware, existing user photos or account data. Same-ROM
+signed A/B OTA can normally preserve user data but is not implemented in this
+app. Initial migration from independently signed GrapheneOS **wipes data** due
+to bootloader unlock and ROM installation; export backups beforehand.

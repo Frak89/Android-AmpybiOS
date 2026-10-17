@@ -89,3 +89,26 @@ during that change. Back up everything externally before a ROM migration.
 Do not stage full OTA ZIPs into device RAM or create an unofficial
 RAM-backed boot partition; use signed Android A/B streaming update support
 from a privileged updater component in an installed AmpybiOS ROM.
+
+## Persistent zero-copy staging
+
+The reference-only option uses `ACTION_OPEN_DOCUMENT` and
+`takePersistableUriPermission(READ)`, stores only the source URI and SHA-256
+in preferences, and deliberately avoids duplicating the ZIP. Both deferred
+and background installations re-open the original file and revalidate its
+digest before invoking the signature-protected AmpyCore importer. If the
+file or provider is no longer available, the request fails closed.
+
+This is distinct from entirely volatile RAM: only the *reference*, not ZIP
+bytes, persists through reboot. The original file remains in user-managed
+storage and is NEVER deleted by AmpyRec.
+
+## Prerequisites for real deployment
+
+- A real Gradle/SDK 37 build and passing JVM tests on the *actual* parser.
+- Signed APK identity and permissions inspection.
+- Same-signature integration tests with AmpyCore on Android 17.
+- Device tests for URI grants across reboots, cancellation, process death,
+  interruptions, storage pressure, app upgrades, malformed ZIP and user data.
+- A separate, release-key-authenticated update_engine/Virtual A/B system
+  updater in AmpybiOS; **no source ZIP can replace a buildable ROM**.

@@ -65,6 +65,16 @@ class AmpyRecContractTests(unittest.TestCase):
         self.assertIn("deliverToCore(context,report)",state)
         self.assertTrue((APP.parent / "test/java/dev/ampybios/rec/RamPackageScannerTest.java").is_file())
 
+    def test_reboot_safe_zero_copy_saf_reference(self):
+        state=(APP / "java/dev/ampybios/rec/RecState.java").read_text()
+        screen=(APP / "java/dev/ampybios/rec/RecActivity.java").read_text()
+        self.assertIn("takePersistableUriPermission",state)
+        self.assertIn("releasePersistableUriPermission",state)
+        self.assertIn('putString("mode","reference")',state)
+        self.assertIn('RamPackageScanner.inspect(data)',state)
+        self.assertIn('expectedRevision.equals(report.zipSha256)',state)
+        self.assertIn("REQUEST_REFERENCE_ZIP",screen)
+
     def test_apk_workflow(self):
         self.assertTrue((ROOT/".github/workflows/ampyrec-apk.yml").is_file())
         self.assertTrue((ROOT/"scripts/build_ampyrec_local.sh").is_file())

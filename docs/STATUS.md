@@ -72,3 +72,19 @@ carry a SHA-256 revision guard to reject stale/cancelled work.
 The APK workflow now includes a post-build APK signature/package/permissions
 gate, but GitHub Actions is still unable to allocate a runner. This verifies
 source controls **only**, not a compiled binary.
+
+## 2026-10-17: memory and zero-copy hardening
+
+- AmpyRec now offers direct RAM scanning and application for 256 KiB
+  allowlisted themes with no temporary ZIP written to disk.
+- Deferred execution can instead retain a read-only SAF document URI and
+  SHA-256, avoiding a second ZIP copy. It rechecks bytes after reboot and
+  aborts on missing/mutated content.
+- The original private-disk staging path remains optional.
+- RAM/disk parsers have separately added JUnit tests, plus comparison of
+  accepted content and checks against ZIP path traversal/bombs; tests are
+  committed but **not executed** because GitHub Actions has not provisioned
+  a runner.
+- Neither the app nor the kernel has passed Android APK/ROM compilation.
+- No user data deletion is introduced by AmpyRec. A first-time custom ROM
+  install cannot promise data retention across bootloader unlock.
