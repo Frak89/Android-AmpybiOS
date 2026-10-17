@@ -110,3 +110,12 @@ compiled**. Opt into packaging Cam/Raw in an AOSP development ROM with
 - [AmpyConnect](apps/AmpyConnect/README.md): standalone HTTPS-only, read-only
   Home Assistant state viewer. No background polling or actuator commands.
   Opt in during developer ROM staging with `AMPY_INCLUDE_CONNECT=1`.
+
+## ROM developer build (Linux x86_64)
+
+Use the [validated source-to-target-files pipeline](docs/ROM_BUILD.md):
+```bash
+python3 scripts/check_build_host.py ~/src/grapheneos-2026100600
+bash scripts/build_ampybios_dev.sh ~/src/grapheneos-2026100600 --dry-run
+```
+Neither command flashes a device or signs a production ROM.
