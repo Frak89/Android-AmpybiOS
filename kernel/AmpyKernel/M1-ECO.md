@@ -78,3 +78,21 @@ with repeat runs. Capture reproducible:
 A useful safe fallback always exists: set `CONFIG_AMPYKERNEL_SUGOV_ECO_DEFAULT=n`
 and rebuild. Keep thermal and safety protections enabled. The guard script
 never flashes, signs or installs anything.
+
+## Execute a read-only two-build comparison
+
+```bash
+# Capture these on the SAME cheetah phone with the SAME app/workload,
+# once using a verified stock development ROM and once using a verified
+# matching experimental development ROM. Do not run on unverified builds.
+AMPY_APP_ID=dev.ampybios.core bash scripts/benchmark_cheetah.sh ./benchmarks/stock-01
+AMPY_APP_ID=dev.ampybios.core bash scripts/benchmark_cheetah.sh ./benchmarks/eco-01
+
+python3 scripts/ampykernel_benchmark_compare.py \
+  ./benchmarks/stock-01 ./benchmarks/eco-01 \
+  --out ./benchmarks/comparison.json
+```
+
+The comparator prints only metrics actually present. It never invents energy
+savings, compares independent samples without caveats, flashes a device or
+changes kernel settings. Repeat the comparison with controlled conditions.

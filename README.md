@@ -127,3 +127,13 @@ Neither command flashes a device or signs a production ROM.
   with themeable app drawer, search, clock and battery. Opt in for experimental
   ROM staging with `AMPY_INCLUDE_LAUNCHER=1`; Android does **not**
   automatically change the default Home app.
+
+## AmpyKernel M1 — experimental source patch
+
+[Kernel M1 documentation](kernel/AmpyKernel/M1-ECO.md) ·
+[Versioned patch](kernel/AmpyKernel/patches/0001-schedutil-opt-in-eco-default.patch)
+
+AmpyKernel M1 is a **version-pinned, opt-in** schedutil experiment (a 2 ms
+minimum startup rate limit). Kconfig defaults **off**, and a guard checks the
+full source commit and upstream blobs. Git patch apply/revert has been checked
+in a host-only fixture. No Pixel kernel image or APK was compiled here.
