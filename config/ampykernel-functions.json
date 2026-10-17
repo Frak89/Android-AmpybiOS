@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "project": "AmpyKernel",
+  "device": "cheetah",
+  "kernel_family": "6.1",
+  "reference": {
+    "repository": "GrapheneOS/kernel_common-6.1",
+    "branch": "17",
+    "reviewed_head": "a001019bb34ebe7b18cfc025b75a7550744a3e60",
+    "source": "https://github.com/GrapheneOS/kernel_common-6.1",
+    "warning": "The moving 17 branch is not proven byte-for-byte identical to the monolithic kernel_pixel_6.1 checkout matching the AmpybiOS GrapheneOS 2026100600 OS pin. Verify manifests before patching any kernel."
+  },
+  "functions": [
+    {
+      "category": "scheduler",
+      "file": "kernel/sched/fair.c",
+      "symbol": "find_energy_efficient_cpu",
+      "reference_line": 7339,
+      "risk": "high",
+      "meaning": "EAS: sceglie le CPU più efficienti secondo capacità, energia e temperatura.",
+      "edit_hint": "Priorità di scheduling e collocamento task, non overclock.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "scheduler",
+      "file": "kernel/sched/fair.c",
+      "symbol": "select_task_rq_fair",
+      "reference_line": 7552,
+      "risk": "high",
+      "meaning": "Decide la CPU su cui risvegliare/eseguire un task CFS.",
+      "edit_hint": "Latenza UI vs migrazioni CPU.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "scheduler",
+      "file": "kernel/sched/fair.c",
+      "symbol": "enqueue_task_fair",
+      "reference_line": 6167,
+      "risk": "high",
+      "meaning": "Gestisce l'inserimento dei task nelle runqueue.",
+      "edit_hint": "Latenza; attenzione a deadlock e starvation.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "scheduler",
+      "file": "kernel/sched/fair.c",
+      "symbol": "dequeue_task_fair",
+      "reference_line": 6264,
+      "risk": "high",
+      "meaning": "Gestisce la rimozione dei task dalle runqueue.",
+      "edit_hint": "Latenza; attenzione a lock e invarianti.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "scheduler",
+      "file": "kernel/sched/fair.c",
+      "symbol": "pick_next_task_fair",
+      "reference_line": 7913,
+      "risk": "high",
+      "meaning": "Seleziona il prossimo task per l'esecuzione.",
+      "edit_hint": "Scheduling e responsività; modifiche molto rischiose.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_should_update_freq",
+      "reference_line": 65,
+      "risk": "high",
+      "meaning": "Valuta se aggiornare la frequenza secondo il rate limit.",
+      "edit_hint": "Profilo Eco/Balanced/Fusion, solo dopo benchmark.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_get_util",
+      "reference_line": 188,
+      "risk": "high",
+      "meaning": "Recupera l'utilizzazione CPU per il governor schedutil.",
+      "edit_hint": "Stima carico CPU, non i limiti termici hardware.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_update_single_freq",
+      "reference_line": 360,
+      "risk": "high",
+      "meaning": "Percorso governor per policy di CPU singola.",
+      "edit_hint": "Reattività alle variazioni di carico.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_next_freq_shared",
+      "reference_line": 439,
+      "risk": "high",
+      "meaning": "Calcola frequenza candidata per policy multi-CPU.",
+      "edit_hint": "Frequenza/fabbisogno; attenzione al consumo.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_update_shared",
+      "reference_line": 465,
+      "risk": "high",
+      "meaning": "Aggiorna frequenza per policy CPU condivise.",
+      "edit_hint": "Reattività e stabilità policy.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpu_governor",
+      "file": "kernel/sched/cpufreq_schedutil.c",
+      "symbol": "sugov_limits",
+      "reference_line": 838,
+      "risk": "high",
+      "meaning": "Gestisce il cambiamento dei limiti policy.",
+      "edit_hint": "Mantenere i limiti termici e di sicurezza.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_io",
+      "file": "mm/readahead.c",
+      "symbol": "page_cache_ra_unbounded",
+      "reference_line": 217,
+      "risk": "medium",
+      "meaning": "Gestione prelettura del page cache.",
+      "edit_hint": "Prestazioni apertura file, memoria consumata.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_io",
+      "file": "mm/readahead.c",
+      "symbol": "ondemand_readahead",
+      "reference_line": 590,
+      "risk": "medium",
+      "meaning": "Scelta dinamica del read-ahead.",
+      "edit_hint": "Accesso sequenziale, I/O su storage.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_io",
+      "file": "mm/readahead.c",
+      "symbol": "page_cache_sync_ra",
+      "reference_line": 715,
+      "risk": "medium",
+      "meaning": "Read-ahead sincrono.",
+      "edit_hint": "Latenza apertura file/media.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_io",
+      "file": "mm/readahead.c",
+      "symbol": "page_cache_async_ra",
+      "reference_line": 743,
+      "risk": "medium",
+      "meaning": "Read-ahead asincrono.",
+      "edit_hint": "Scorrimento/lettura anticipata.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_reclaim",
+      "file": "mm/vmscan.c",
+      "symbol": "shrink_lruvec",
+      "reference_line": 6379,
+      "risk": "high",
+      "meaning": "Reclaim della memoria LRU.",
+      "edit_hint": "Riduzione jank sotto pressione RAM; rischio regressioni.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_reclaim",
+      "file": "mm/vmscan.c",
+      "symbol": "shrink_node",
+      "reference_line": 6646,
+      "risk": "high",
+      "meaning": "Reclaim per nodo di memoria.",
+      "edit_hint": "Pressione memoria e comportamento kswapd.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "memory_reclaim",
+      "file": "mm/vmscan.c",
+      "symbol": "do_try_to_free_pages",
+      "reference_line": 6970,
+      "risk": "high",
+      "meaning": "Percorso principale reclaim sincrono.",
+      "edit_hint": "Prestazioni/stabilità sotto memoria limitata.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpufreq_framework",
+      "file": "drivers/cpufreq/cpufreq.c",
+      "symbol": "cpufreq_update_policy",
+      "reference_line": 2675,
+      "risk": "high",
+      "meaning": "Aggiornamento policy CPUFreq.",
+      "edit_hint": "Interazione con driver/limiti firmware.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "cpufreq_framework",
+      "file": "drivers/cpufreq/cpufreq.c",
+      "symbol": "cpufreq_driver_target",
+      "reference_line": 2347,
+      "risk": "high",
+      "meaning": "Richiede frequenza target tramite driver.",
+      "edit_hint": "Non bypassare limiti termici e alimentazione.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "suspend",
+      "file": "kernel/power/suspend.c",
+      "symbol": "suspend_enter",
+      "reference_line": 409,
+      "risk": "critical",
+      "meaning": "Sequenza di ingresso in sospensione.",
+      "edit_hint": "Sconsigliata la modifica nella prima release.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "suspend",
+      "file": "kernel/power/suspend.c",
+      "symbol": "suspend_devices_and_enter",
+      "reference_line": 505,
+      "risk": "critical",
+      "meaning": "Sospensione dispositivi e piattaforma.",
+      "edit_hint": "Sconsigliata: impatta sleep/wake e hardware.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    },
+    {
+      "category": "suspend",
+      "file": "kernel/power/suspend.c",
+      "symbol": "enter_state",
+      "reference_line": 580,
+      "risk": "critical",
+      "meaning": "Gestisce ingresso nello stato suspend.",
+      "edit_hint": "Sconsigliata: impatta sleep/wake e hardware.",
+      "confirmed_in": "GrapheneOS/kernel_common-6.1 17 @ a001019bb34ebe7b18cfc025b75a7550744a3e60"
+    }
+  ]
+}

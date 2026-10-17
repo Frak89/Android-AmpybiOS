@@ -42,3 +42,7 @@ regression tests must match before such integration.
 For non-invasive on-device measurements use
 `scripts/benchmark_cheetah.sh /path/to/results` with USB debugging on a real
 Pixel 7 Pro and `dev.ampybios.core` installed. See [PERFORMANCE.md](PERFORMANCE.md).
+
+## Editable kernel symbol extraction
+
+See [AmpyKernel editable function catalog](../kernel/AmpyKernel/README.md). It includes 23 verified functions from GrapheneOS common 6.1 and a source-side extractor that records exact line ranges and hashes (with optional GPL-licensed reference snippets). The source checkout remains external to this small repository.

@@ -30,4 +30,5 @@ lunch cheetah-cur-user
 set -u
 
 m vendorbootimage vendorkernelbootimage target-files-package
-echo "AmpybiOS development target-files build finished (AmpyCore product addition only)."\necho "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."
+echo "AmpybiOS development target-files build finished (AmpyCore product addition only)."
+echo "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."
