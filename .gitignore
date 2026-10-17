@@ -32,3 +32,7 @@ local.properties
 # Device measurements / locally cloned kernel source
 benchmarks/
 kernel_pixel_6.1/
+
+# Generated AmpyBoot files (artwork SVG sources remain tracked)
+overlays/**/boot_logo_package/frames/
+overlays/**/boot_logo_package/*.zip

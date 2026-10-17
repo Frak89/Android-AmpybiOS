@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 2400">
+  <rect width="1080" height="2400" fill="#060916"/>
+  <circle cx="540" cy="1200" r="300" stroke="#9A4CF6" stroke-width="8" fill="none"/>
+  <text x="540" y="1610" font-family="sans-serif" font-weight="bold"
+        font-size="82" fill="#18E1EE" text-anchor="middle">AmpybiOS</text>
+</svg>
