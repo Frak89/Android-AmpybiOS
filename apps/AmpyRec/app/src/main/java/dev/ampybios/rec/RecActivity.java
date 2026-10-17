@@ -197,6 +197,15 @@ public final class RecActivity extends Activity {
                     REQUEST_NOTIFICATIONS);
         }
     }
+    @Override public void onRequestPermissionsResult(int requestCode,
+            String[] permissions, int[] grants) {
+        super.onRequestPermissionsResult(requestCode, permissions, grants);
+        if (requestCode == REQUEST_NOTIFICATIONS && grants.length > 0 &&
+                grants[0] == PackageManager.PERMISSION_GRANTED) {
+            BootReminder.notifyUser(this);
+        }
+    }
+
     private void schedule() {
         if(RecState.scheduleBackground(this)) {
             BootReminder.clear(this);

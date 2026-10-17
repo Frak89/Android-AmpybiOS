@@ -141,7 +141,12 @@ public final class RecState {
                 event.setPackage("dev.ampybios.core");
                 event.putExtra("id", theme.id);
                 event.putExtra("json", theme.content);
-                context.sendBroadcast(event, SKIN_PERMISSION);
+                try {
+                    context.sendBroadcast(event, SKIN_PERMISSION);
+                } catch (SecurityException notSameSigner) {
+                    // The private theme installation remains valid.
+                    // Sender/certificate mismatch must never bypass permission.
+                }
             }
             staged(context).delete(); // Keep only activated JSON data, not stale ZIP.
             return "Applicati "+report.themes.size()+
