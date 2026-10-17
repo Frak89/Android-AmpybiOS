@@ -39,6 +39,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -63,6 +65,9 @@ public final class CameraActivity extends Activity {
     private FrameLayout rootLayout;
     private TextView titleView;
     private Spinner themeSelector;
+    private Switch followCore;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceListener;
+    private boolean settingThemeFromCore;
     private SharedPreferences themePreferences;
     private TextureView texture;
     private TextView status;
@@ -101,6 +106,15 @@ public final class CameraActivity extends Activity {
         super.onCreate(savedInstanceState);
         themePreferences = getSharedPreferences("ampycam.theme", MODE_PRIVATE);
         makeUi();
+        preferenceListener = (prefs, key) -> {
+            if ("theme".equals(key) && prefs.getBoolean("follow_core", true)) {
+                String value = prefs.getString("theme", "fusion");
+                settingThemeFromCore = true;
+                themeSelector.setSelection(findTheme(value));
+                applyTheme(CamTheme.load(CameraActivity.this, value));
+                settingThemeFromCore = false;
+            }
+        };
     }
 
     private void makeUi() {
@@ -133,11 +147,24 @@ public final class CameraActivity extends Activity {
             @Override public void onItemSelected(AdapterView<?> parent, View view,
                                                   int position, long id) {
                 String name = THEMES[position];
-                themePreferences.edit().putString("theme", name).apply();
+                SharedPreferences.Editor editor = themePreferences.edit()
+                        .putString("theme", name);
+                if (!settingThemeFromCore) {
+                    editor.putBoolean("follow_core", false);
+                    if (followCore != null) followCore.setChecked(false);
+                }
+                editor.apply();
                 applyTheme(CamTheme.load(CameraActivity.this, name));
             }
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
+        followCore = new Switch(this);
+        followCore.setText("Segui tema AmpyCore");
+        followCore.setTextColor(Color.WHITE);
+        followCore.setChecked(themePreferences.getBoolean("follow_core", true));
+        followCore.setOnCheckedChangeListener((button, isChecked) ->
+                themePreferences.edit().putBoolean("follow_core", isChecked).apply());
+        upper.addView(followCore, new LinearLayout.LayoutParams(-1, px(42)));
         root.addView(upper, new FrameLayout.LayoutParams(-1, -2, Gravity.TOP));
 
         LinearLayout lower = new LinearLayout(this);
@@ -209,6 +236,12 @@ public final class CameraActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         activityVisible = true;
+        themePreferences.registerOnSharedPreferenceChangeListener(preferenceListener);
+        String syncedTheme = themePreferences.getString("theme", "fusion");
+        settingThemeFromCore = true;
+        themeSelector.setSelection(findTheme(syncedTheme));
+        applyTheme(CamTheme.load(this, syncedTheme));
+        settingThemeFromCore = false;
         cameraThread = new HandlerThread("AmpyCam-Camera2");
         cameraThread.start();
         cameraHandler = new Handler(cameraThread.getLooper());
@@ -217,6 +250,7 @@ public final class CameraActivity extends Activity {
 
     @Override protected void onPause() {
         activityVisible = false;
+        themePreferences.unregisterOnSharedPreferenceChangeListener(preferenceListener);
         canCapture(false);
         // Serialize cleanup after any already queued image/capture callbacks.
         Handler handler = cameraHandler;

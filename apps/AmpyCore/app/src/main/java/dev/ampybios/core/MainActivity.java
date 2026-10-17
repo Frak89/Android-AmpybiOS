@@ -1,6 +1,7 @@
 package dev.ampybios.core;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -25,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -60,6 +62,8 @@ public final class MainActivity extends Activity {
     private TextView performanceDiagnostics;
     private ThemeProfile theme;
     private boolean updating;
+    private static final String SKIN_ACTION = "dev.ampybios.action.SKIN_CHANGED";
+    private static final String SKIN_PERMISSION = "dev.ampybios.permission.SKIN_SYNC";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -231,7 +235,14 @@ public final class MainActivity extends Activity {
 
     private void switchTheme(String id) {
         try (InputStream stream = getAssets().open(id + ".json")) {
-            byte[] bytes = stream.readAllBytes();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] chunk = new byte[2048];
+            int len;
+            while ((len = stream.read(chunk)) != -1) {
+                out.write(chunk, 0, len);
+                if (out.size() > 64 * 1024) throw new IllegalArgumentException("Oversized theme");
+            }
+            byte[] bytes = out.toByteArray();
             theme = ThemeProfile.parse(new JSONObject(new String(bytes, StandardCharsets.UTF_8)), getResources());
             updating = true;
             settings.edit().putString("theme", id).apply();
@@ -247,7 +258,13 @@ public final class MainActivity extends Activity {
             }
             updating = false;
             applyTheme();
-            status.setText("Tema " + theme.label + " caricato · Anteprima locale");
+            status.setText("Tema " + theme.label + " caricato · Sincronizzazione AmpyCam attiva");
+            // App-scoped, signature-protected explicit broadcast. This does not
+            // and cannot modify other apps or Android SystemUI.
+            Intent themeChange = new Intent(SKIN_ACTION);
+            themeChange.setPackage("dev.ampybios.cam");
+            themeChange.putExtra("theme", id);
+            sendBroadcast(themeChange, SKIN_PERMISSION);
         } catch (Exception error) {
             updating = false;
             status.setText("Tema non disponibile: " + error.getClass().getSimpleName());

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <permission
+        android:name="dev.ampybios.permission.SKIN_SYNC"
+        android:protectionLevel="signature"/>
+    <uses-permission android:name="dev.ampybios.permission.SKIN_SYNC"/>
     <application
         android:allowBackup="false"
         android:hasFragileUserData="false"
