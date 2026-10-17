@@ -30,6 +30,20 @@ public final class PerformancePolicyTest {
                 "Unavailable battery and thermal readings keep selection");
         verify(PerformancePolicy.resolve(999, 0, false, 80, false).effectiveProfile == 2,
                 "Clamp invalid profile index");
+        verify(PerformancePolicy.resolve(2, 1, false, 80, false, true)
+                .effectiveProfile == 1, "Proactive LIGHT caps at Balanced");
+        verify(PerformancePolicy.resolve(2, 1, false, 80, false, false)
+                .effectiveProfile == 2, "Opting out of proactive LIGHT keeps Fusion");
+        verify(PerformancePolicy.resolve(2, 2, false, 80, false, true)
+                .effectiveProfile == 0, "Proactive MODERATE caps at Eco");
+        verify(PerformancePolicy.resolve(2, 2, false, 80, false, false)
+                .effectiveProfile == 1, "Mandatory MODERATE still caps at Balanced");
+        verify(PerformancePolicy.resolve(2, 3, false, 80, false, false)
+                .effectiveProfile == 0, "Mandatory SEVERE remains active when opt-out");
+        verify(PerformancePolicy.resolve(2, 4, false, 80, false, false)
+                .forceReducedMotion, "Mandatory CRITICAL still reduces motion");
+        verify(PerformancePolicy.resolve(2, -1, true, 80, false, false)
+                .effectiveProfile == 0, "Android battery saver cannot be bypassed");
         verify("Balanced".equals(PerformancePolicy.name(1)), "Display name");
         System.out.println("OK: " + tests + " AmpyKernel performance policy checks");
     }

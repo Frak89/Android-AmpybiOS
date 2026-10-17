@@ -37,6 +37,17 @@ public final class PerformancePolicy {
 
     public static Budget resolve(int requested, int thermalStatus, boolean powerSaver,
                                  int batteryPercent, boolean charging) {
+        return resolve(requested, thermalStatus, powerSaver, batteryPercent,
+                charging, true);
+    }
+
+    /**
+     * Proactive adaptation is optional, but Android Battery Saver and the
+     * mandatory moderate/severe/critical thermal fallbacks can never be disabled.
+     */
+    public static Budget resolve(int requested, int thermalStatus, boolean powerSaver,
+                                 int batteryPercent, boolean charging,
+                                 boolean proactiveThermal) {
         int selected = Math.max(ECO, Math.min(FUSION_EXTREME, requested));
         int effective = selected;
         String reason = "Profilo selezionato";
@@ -45,10 +56,17 @@ public final class PerformancePolicy {
         // SEVERE=3, CRITICAL=4, EMERGENCY=5, SHUTDOWN=6.
         if (thermalStatus >= 3) {
             effective = ECO;
-            reason = "Protezione termica";
-        } else if (thermalStatus >= 2 && effective > BALANCED) {
+            reason = "Protezione termica Android";
+        } else if (thermalStatus >= 2) {
+            int maxThermalProfile = proactiveThermal ? ECO : BALANCED;
+            if (effective > maxThermalProfile) {
+                effective = maxThermalProfile;
+                reason = "Temperatura moderata";
+            }
+        } else if (proactiveThermal && thermalStatus == 1 &&
+                effective > BALANCED) {
             effective = BALANCED;
-            reason = "Temperatura elevata";
+            reason = "Prevenzione termica";
         }
         if (powerSaver && effective > ECO) {
             effective = ECO;
