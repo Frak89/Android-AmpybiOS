@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "name": "AmpyRAW Cyberdark",
+  "repository": "Frak89/AmpyRAW-Cyberdark",
+  "git_url": "https://github.com/Frak89/AmpyRAW-Cyberdark.git",
+  "source_sha": "af16ef4a4bb82a5fed76e3f151b1c854d16824ae",
+  "source_branch": "main",
+  "package_name": "it.ampy.ampyraw",
+  "app_version": "0.9.0",
+  "version_code": 13,
+  "build": {
+    "gradle": "8.13",
+    "android_gradle_plugin": "8.13.2",
+    "sdk": 36,
+    "ndk": "27.2.12479018",
+    "cmake": "3.22.1",
+    "abi": "arm64-v8a",
+    "native_decoder": "LibRaw 0.22.2"
+  },
+  "rom_inclusion": {
+    "module": "AmpyRAW",
+    "kind": "presigned_app_import",
+    "enabled_by_default": false,
+    "required_validation": [
+      "Android package ID",
+      "APK SHA256",
+      "signer certificate SHA256",
+      "apksigner verification"
+    ],
+    "signer_policy": "preserve original OTA signing identity; no platform re-sign"
+  },
+  "theme": {
+    "action": "dev.ampybios.action.SKIN_CHANGED",
+    "receiver": "it.ampy.ampyraw.AmpyBiosThemeReceiver",
+    "default_follow": false,
+    "require_same_signer": true
+  }
+}

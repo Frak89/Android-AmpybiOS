@@ -1,0 +1,11 @@
+// Original AmpyRAW Cyberdark. This module preserves the APK's own Android
+// signer/package/OTA identity. Never use certificate: "platform" here.
+android_app_import {
+    name: "AmpyRAW",
+    apk: "AmpyRAW.apk",
+    presigned: true,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+}
