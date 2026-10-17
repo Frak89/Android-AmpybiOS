@@ -6,6 +6,7 @@
     <!-- Narrow package visibility: signature check for the paired editor only. -->
     <queries>
         <package android:name="dev.ampybios.core"/>
+        <package android:name="dev.ampybios.launcher"/>
     </queries>
     <application
         android:label="@string/app_name"
