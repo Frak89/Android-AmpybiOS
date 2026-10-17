@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-2.0
+ * SOURCE: GrapheneOS/kernel_common-6.1, commit a001019bb34ebe7b18cfc025b75a7550744a3e60
+ * PATH: mm/readahead.c
+ * ORIGINAL LINES: 743-762
+ * Reference-only extraction; NOT standalone compilable source or ROM patch.
+ * Upstream credits/licenses remain applicable. Adapt ONLY in pinned source checkout.
+ */
+void page_cache_async_ra(struct readahead_control *ractl,
+		struct folio *folio, unsigned long req_count)
+{
+	/* no readahead */
+	if (!ractl->ra->ra_pages)
+		return;
+
+	/*
+	 * Same bit is used for PG_readahead and PG_reclaim.
+	 */
+	if (folio_test_writeback(folio))
+		return;
+
+	folio_clear_readahead(folio);
+
+	if (blk_cgroup_congested())
+		return;
+
+	ondemand_readahead(ractl, folio, req_count);
+}

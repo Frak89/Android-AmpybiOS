@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-2.0
+ * SOURCE: GrapheneOS/kernel_common-6.1, commit a001019bb34ebe7b18cfc025b75a7550744a3e60
+ * PATH: drivers/cpufreq/cpufreq.c
+ * ORIGINAL LINES: 2675-2694
+ * Reference-only extraction; NOT standalone compilable source or ROM patch.
+ * Upstream credits/licenses remain applicable. Adapt ONLY in pinned source checkout.
+ */
+void cpufreq_update_policy(unsigned int cpu)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_acquire(cpu);
+
+	if (!policy)
+		return;
+
+	/*
+	 * BIOS might change freq behind our back
+	 * -> ask driver for current freq and notify governors about a change
+	 */
+	if (cpufreq_driver->get && has_target() &&
+	    (cpufreq_suspended || WARN_ON(!cpufreq_verify_current_freq(policy, false))))
+		goto unlock;
+
+	refresh_frequency_limits(policy);
+
+unlock:
+	cpufreq_cpu_release(policy);
+}

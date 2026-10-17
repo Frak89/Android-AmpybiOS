@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0
+ * SOURCE: GrapheneOS/kernel_common-6.1, commit a001019bb34ebe7b18cfc025b75a7550744a3e60
+ * PATH: kernel/sched/cpufreq_schedutil.c
+ * ORIGINAL LINES: 65-107
+ * Reference-only extraction; NOT standalone compilable source or ROM patch.
+ * Upstream credits/licenses remain applicable. Adapt ONLY in pinned source checkout.
+ */
+static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+{
+	s64 delta_ns;
+
+	/*
+	 * Since cpufreq_update_util() is called with rq->lock held for
+	 * the @target_cpu, our per-CPU data is fully serialized.
+	 *
+	 * However, drivers cannot in general deal with cross-CPU
+	 * requests, so while get_next_freq() will work, our
+	 * sugov_update_commit() call may not for the fast switching platforms.
+	 *
+	 * Hence stop here for remote requests if they aren't supported
+	 * by the hardware, as calculating the frequency is pointless if
+	 * we cannot in fact act on it.
+	 *
+	 * This is needed on the slow switching platforms too to prevent CPUs
+	 * going offline from leaving stale IRQ work items behind.
+	 */
+	if (!cpufreq_this_cpu_can_update(sg_policy->policy))
+		return false;
+
+	if (unlikely(READ_ONCE(sg_policy->limits_changed))) {
+		WRITE_ONCE(sg_policy->limits_changed, false);
+		sg_policy->need_freq_update = true;
+
+		/*
+		 * The above limits_changed update must occur before the reads
+		 * of policy limits in cpufreq_driver_resolve_freq() or a policy
+		 * limits update might be missed, so use a memory barrier to
+		 * ensure it.
+		 *
+		 * This pairs with the write memory barrier in sugov_limits().
+		 */
+		smp_mb();
+
+		return true;
+	}
+
+	delta_ns = time - sg_policy->last_freq_update_time;
+
+	return delta_ns >= sg_policy->freq_update_delay_ns;
+}
