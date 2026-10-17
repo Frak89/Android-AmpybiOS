@@ -100,6 +100,32 @@ public final class RamPackageScannerTest {
             assertTrue(expected.getMessage().contains("256 KiB"));
         }
     }
+    @Test public void producesSameRevisionAndThemesAsDiskScanner() throws Exception {
+        byte[] archive=valid();
+        java.io.File tempFile=java.io.File.createTempFile("ampyrec-compare",".zip");
+        try {
+            java.nio.file.Files.write(tempFile.toPath(),archive);
+            RecPackage.Report disk=RecPackage.inspect(tempFile);
+            RecPackage.Report memory=RamPackageScanner.inspect(archive);
+            assertEquals(disk.zipSha256,memory.zipSha256);
+            assertEquals(disk.kind,memory.kind);
+            assertEquals(disk.themes.size(),memory.themes.size());
+            assertEquals(disk.themes.get(0).content,memory.themes.get(0).content);
+        } finally {
+            tempFile.delete();
+        }
+    }
+
+    @Test public void rejectsInflatedZipBombEvenIfCompressedIsSmall() throws Exception {
+        String huge="Z".repeat(40*1024);
+        try {
+            RamPackageScanner.inspect(zip("ampyrec.json",huge));
+            fail("must cap inflated entry");
+        } catch(java.io.IOException expected) {
+            assertTrue(expected.getMessage().contains("limiti"));
+        }
+    }
+
     @Test public void rejectsOtaInMemory() throws Exception {
         try {
             RamPackageScanner.inspect(zip("payload.bin","firmware",
