@@ -262,7 +262,7 @@ public final class MainActivity extends Activity {
             // App-scoped, signature-protected explicit broadcast. This does not
             // and cannot modify other apps or Android SystemUI.
             for (String target : new String[]{
-                    "dev.ampybios.cam", "dev.ampybios.raw",
+                    "dev.ampybios.cam", "it.ampy.ampyraw",
                     "dev.ampybios.connect", "dev.ampybios.launcher"}) {
                 Intent themeChange = new Intent(SKIN_ACTION);
                 themeChange.setPackage(target);

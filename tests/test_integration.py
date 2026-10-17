@@ -34,7 +34,7 @@ class GrapheneIntegrationTests(unittest.TestCase):
             self.assertIn("PRODUCT_PACKAGES += AmpyCore",
                           (source / "vendor/ampybios/product.mk").read_text())
 
-    def test_optional_camera_and_editor_are_explicit_and_idempotent(self):
+    def test_optional_native_apps_are_explicit_and_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "grapheneos"
             device = source / "device/google/pantah/device-cheetah.mk"
@@ -51,14 +51,35 @@ class GrapheneIntegrationTests(unittest.TestCase):
                 subprocess.run(cmd, check=True, capture_output=True, env=flags)
             product = (source / "vendor/ampybios/product.mk").read_text()
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyCam"), 1)
-            self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyRaw"), 1)
+            self.assertNotIn("PRODUCT_PACKAGES += AmpyRAW", product)
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyConnect"), 1)
             self.assertEqual(product.count("PRODUCT_PACKAGES += AmpyLauncher"), 1)
-            for name in ("AmpyCam", "AmpyRaw", "AmpyConnect", "AmpyLauncher"):
+            for name in ("AmpyCam", "AmpyConnect", "AmpyLauncher"):
                 app = source / "vendor/ampybios/apps" / name
                 self.assertTrue((app / "Android.bp").is_file())
                 self.assertTrue((app / "AndroidManifest.xml").is_file())
                 self.assertTrue((app / "assets/fusion.json").is_file())
+
+    def test_original_ampyraw_requires_approved_signed_apk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "grapheneos"
+            device = source / "device/google/pantah/device-cheetah.mk"
+            device.parent.mkdir(parents=True)
+            device.write_text("PRODUCT_PACKAGES += Base\n", encoding="utf-8")
+            envsetup = source / "build/envsetup.sh"
+            envsetup.parent.mkdir(parents=True)
+            envsetup.write_text("# mock\n")
+            before = device.read_text(encoding="utf-8")
+            command = ["bash", str(ROOT / "scripts/integrate_grapheneos.sh"),
+                       str(source), "--dry-run"]
+            flags = {**os.environ, "AMPY_INCLUDE_RAW": "1"}
+            for key in ("AMPYRAW_PREBUILT_APK", "AMPYRAW_EXPECTED_APK_SHA256",
+                        "AMPYRAW_EXPECTED_SIGNER_SHA256"):
+                flags.pop(key, None)
+            result = subprocess.run(command, env=flags, capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(device.read_text(encoding="utf-8"), before)
+            self.assertFalse((source / "vendor/ampybios").exists())
 
     def test_rejects_unmanaged_vendor_directory(self):
         with tempfile.TemporaryDirectory() as tmp:

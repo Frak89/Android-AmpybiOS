@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from scripts.validate_config import ROOT
 
-APPS = ("AmpyCore", "AmpyCam", "AmpyRaw", "AmpyConnect", "AmpyLauncher")
+APPS = ("AmpyCore", "AmpyCam", "AmpyConnect", "AmpyLauncher")
 
 
 class AppModuleTests(unittest.TestCase):
@@ -23,8 +23,19 @@ class AppModuleTests(unittest.TestCase):
             self.assertIn('AMPY_INCLUDE_' + name + '="${AMPY_INCLUDE_' + name + ':-0}"', script)
         product = (ROOT / "platform/ampybios/product.mk").read_text()
         self.assertIn("PRODUCT_PACKAGES += AmpyCore", product)
-        for app in ("AmpyCam", "AmpyRaw", "AmpyConnect", "AmpyLauncher"):
+        for app in ("AmpyCam", "AmpyRAW", "AmpyConnect", "AmpyLauncher"):
             self.assertNotIn("PRODUCT_PACKAGES += " + app, product)
+
+    def test_original_ampyraw_is_imported_not_duplicated(self):
+        from json import loads
+        config = loads((ROOT / "config/ampyraw-upstream.json").read_text())
+        self.assertEqual(config["package_name"], "it.ampy.ampyraw")
+        self.assertEqual(config["rom_inclusion"]["module"], "AmpyRAW")
+        soong = (ROOT / "platform/AmpyRAW/Android.bp").read_text()
+        self.assertIn("android_app_import", soong)
+        self.assertIn("presigned: true", soong)
+        self.assertFalse((ROOT / "apps/AmpyRaw").exists())
+
 
 
 if __name__ == "__main__":

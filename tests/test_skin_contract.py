@@ -24,7 +24,7 @@ class SkinContractTests(unittest.TestCase):
         self.assertEqual(matches[0].get(ANDROID + "protectionLevel"), "signature")
 
     def test_optin_apps_restrict_incoming_broadcast(self):
-        for app in ("AmpyCam", "AmpyRaw", "AmpyConnect", "AmpyLauncher"):
+        for app in ("AmpyCam", "AmpyConnect", "AmpyLauncher"):
             with self.subTest(app=app):
                 root = manifest(app)
                 uses = [e.get(ANDROID + "name") for e in root.findall("uses-permission")]
@@ -36,6 +36,15 @@ class SkinContractTests(unittest.TestCase):
                 actions = [a.get(ANDROID + "name") for a in
                            scoped[0].findall("intent-filter/action")]
                 self.assertIn(ACTION, actions)
+
+    def test_original_ampyraw_signed_theme_bridge_is_pinned(self):
+        from json import loads
+        config = loads((ROOT / "config/ampyraw-upstream.json").read_text())
+        self.assertEqual(config["package_name"], "it.ampy.ampyraw")
+        self.assertEqual(config["theme"]["receiver"],
+                         "it.ampy.ampyraw.AmpyBiosThemeReceiver")
+        self.assertTrue(config["theme"]["require_same_signer"])
+        self.assertFalse(config["theme"]["default_follow"])
 
     def test_no_broad_package_visibility_in_launcher(self):
         root = manifest("AmpyLauncher")
