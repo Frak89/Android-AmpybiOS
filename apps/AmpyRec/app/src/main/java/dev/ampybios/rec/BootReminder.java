@@ -33,7 +33,9 @@ public final class BootReminder extends BroadcastReceiver {
                     "Job di background assente dopo il riavvio; conferma necessaria");
             state=RecState.prefs(context).getString("state","");
         }
-        if (!"deferred".equals(state) && !"staged".equals(state)) return;
+        boolean pending="deferred".equals(state)||"staged".equals(state);
+        boolean hasSource=SourceSession.isSelected(context);
+        if (!pending && !hasSource) return;
         notifyUser(context);
     }
     static void notifyUser(Context context) {
@@ -49,10 +51,16 @@ public final class BootReminder extends BroadcastReceiver {
         open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pending=PendingIntent.getActivity(context,0,open,
                 PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+        boolean themePending="deferred".equals(
+                RecState.prefs(context).getString("state","")) ||
+                "staged".equals(RecState.prefs(context).getString("state",""));
         Notification alert=new Notification.Builder(context,CHANNEL)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle("AmpyRec — tema LIVE pronto")
-                .setContentText("Tocca: applica ora, rimanda o esegui in background")
+                .setContentTitle(themePending ? "AmpyRec — aggiornamento LIVE"
+                        : "AmpyRec — sessione grafica AmpybiOS")
+                .setContentText(themePending
+                        ? "Apri per applicare, rinviare o pianificare"
+                        : "Apri per verificare sorgenti e configurare AmpyLauncher come Home")
                 .setContentIntent(pending)
                 .setAutoCancel(true)
                 .build();
