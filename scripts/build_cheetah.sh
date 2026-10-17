@@ -8,8 +8,14 @@ if [[ -z "$TREE" || ! -f "$TREE/build/envsetup.sh" ]]; then
 fi
 cd "$TREE"
 
+if [[ ! -f vendor/ampybios/.managed-by-ampybios ]] ||
+   ! grep -Fq '$(call inherit-product, vendor/ampybios/product.mk)' device/google/pantah/device-cheetah.mk; then
+  echo "AmpyCore integration not detected; run scripts/integrate_grapheneos.sh first." >&2
+  exit 3
+fi
 if [[ ! -d vendor/google_devices ]]; then
-  echo "Warning: verify Pixel vendor extraction (adevtool generate-all -d cheetah) before building." >&2
+  echo "Pixel vendor extraction not detected; run 'adevtool generate-all -d cheetah' first." >&2
+  exit 3
 fi
 
 # Critical: GrapheneOS includes Updater when OFFICIAL_BUILD is enabled. Never
@@ -24,4 +30,4 @@ lunch cheetah-cur-user
 set -u
 
 m vendorbootimage vendorkernelbootimage target-files-package
-echo "Upstream development target-files built. No AmpybiOS patches, release signing or OTA server were applied."
+echo "AmpybiOS development target-files build finished (AmpyCore product addition only)."\necho "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."

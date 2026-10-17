@@ -27,7 +27,7 @@ bash scripts/integrate_grapheneos.sh "$HOME/grapheneos-2026100600"
 bash scripts/build_cheetah.sh "$HOME/grapheneos-2026100600"
 ```
 
-**The integration** copies `apps/AmpyCore/app/src/main` Java sources and resources plus theme JSONs into `vendor/ampybios/apps/AmpyCore`, builds the app as `android_app` on the product partition and appends a one-time product include to `device/google/pantah/device-cheetah.mk`. Other source projects (SystemUI, Settings, Launcher3, Updater) are not modified yet. A signed, supported AOSP product must be built and tested before flashing.
+**The integration (a separate explicit step after vendor extraction)** copies `apps/AmpyCore/app/src/main` Java sources and resources plus theme JSONs into `vendor/ampybios/apps/AmpyCore`, builds the app as `android_app` on the product partition and appends a one-time product include to `device/google/pantah/device-cheetah.mk`. Other source projects (SystemUI, Settings, Launcher3, Updater) are not modified yet. A signed, supported AOSP product must be built and tested before flashing.
 
 ### Optional Android boot animation
 
@@ -41,7 +41,7 @@ This installs an Android boot animation under `/product/media`, not the propriet
 
 ### OTA safety
 
-Until independent AmpyOTA hosting/signing is implemented and tested, the GrapheneOS Updater remains **disabled** in the custom build. The imported Updater XML is for reference only; its original official URL MUST NOT be used for any AmpybiOS build.
+Never copy the entire `overlays/` directory into a product partition: it contains source-only examples and documentation. The `prepare_source.sh` script performs only manifest verification and `repo sync`.\n\nUntil independent AmpyOTA hosting/signing is implemented and tested, the GrapheneOS Updater remains **disabled** in the custom build. The imported Updater XML is for reference only; its original official URL MUST NOT be used for any AmpybiOS build.
 
 ### Privacy apps and photographic modules
 

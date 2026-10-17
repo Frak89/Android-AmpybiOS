@@ -36,10 +36,12 @@ bash scripts/prepare_source.sh ~/android/grapheneos-2026100600
 # Inside the checkout, follow upstream steps to generate Pixel vendor files:
 # yarn --cwd vendor/adevtool/ install
 # adevtool generate-all -d cheetah
-bash /path/to/Android-AmpybiOS/scripts/build_cheetah.sh ~/android/grapheneos-2026100600
+bash scripts/integrate_grapheneos.sh ~/android/grapheneos-2026100600 --dry-run
+bash scripts/integrate_grapheneos.sh ~/android/grapheneos-2026100600
+bash scripts/build_cheetah.sh ~/android/grapheneos-2026100600
 ```
 
-The build script compiles **unmodified upstream sources** until AmpybiOS patches are reviewed and explicitly applied. A build produced this way is NOT yet branded or signed as AmpybiOS.
+The integration currently adds only the unprivileged AmpyCore app to the GrapheneOS product. Source synchronization never blindly copies `overlays/` into the ROM. The build is **not signed or flashable**, and the system UI remains unchanged.
 
 Optional PNG boot animation packager:
 ```bash

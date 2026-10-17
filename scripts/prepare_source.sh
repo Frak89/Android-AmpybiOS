@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TAG="${AMPY_GRAPHENE_TAG:-2026100600}"
+PINNED_TAG="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["base_release_tag"])' "$SCRIPT_DIR/../config/build.json")"
+if [[ "$TAG" != "$PINNED_TAG" ]]; then
+  echo "Refusing GrapheneOS tag $TAG: AmpybiOS manifest and kernel mirror are pinned to $PINNED_TAG." >&2
+  exit 2
+fi
 DEST="${1:-$PWD/grapheneos-$TAG}"
 case "$TAG" in *[!0-9]*|"") echo "Expected numeric stable tag, got: $TAG" >&2; exit 2;; esac
 for tool in repo git curl ssh-keygen python3; do
@@ -9,7 +15,6 @@ for tool in repo git curl ssh-keygen python3; do
 done
 mkdir -p "$DEST"
 DEST="$(cd "$DEST" && pwd)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Syncing GrapheneOS stable tag $TAG to $DEST (large download)"
 cd "$DEST"
 repo init -u https://github.com/GrapheneOS/platform_manifest.git -b "refs/tags/$TAG"
@@ -23,10 +28,14 @@ if [[ "${AMPY_USE_KERNEL_MIRROR:-0}" == "1" ]]; then
 fi
 repo sync -j8
 
-# Apply AmpybiOS overlays (device/product fragments, vendor files, boot animation, APK prebuilds)
-if [[ -d "$SCRIPT_DIR/../overlays/cheetah" ]]; then
-  echo "Applying AmpybiOS overlays to $DEST"
-  python3 "$SCRIPT_DIR/copy_overlays.py" "$DEST" || { echo "Overlay copy failed" >&2; exit 1; }
-fi
-
-echo "Sources synchronized. Next: upstream Pixel vendor extraction, then build."
+# Do NOT copy the overlay tree wholesale. Overlay docs/assets can contain
+# source-only files and boot artwork which must never land on system partitions.
+# The integration script stages only the known AmpyCore product files after
+# vendor extraction and explicit review.
+echo "GrapheneOS sources synchronized at $DEST."
+echo "Next on the build machine:"
+echo "  yarn --cwd $DEST/vendor/adevtool/ install"
+echo "  cd $DEST && adevtool generate-all -d cheetah"
+echo "  bash $SCRIPT_DIR/integrate_grapheneos.sh $DEST --dry-run"
+echo "  bash $SCRIPT_DIR/integrate_grapheneos.sh $DEST"
+echo "  bash $SCRIPT_DIR/build_cheetah.sh $DEST"
