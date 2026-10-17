@@ -112,3 +112,23 @@ storage and is NEVER deleted by AmpyRec.
   interruptions, storage pressure, app upgrades, malformed ZIP and user data.
 - A separate, release-key-authenticated update_engine/Virtual A/B system
   updater in AmpybiOS; **no source ZIP can replace a buildable ROM**.
+
+## HOME session with original uncompiled source archive
+
+The user's `Downloads/AmpybiOS.zip` is treated only as source *evidence*,
+not a bootable Linux/Android image. A bounded ZipInputStream parser identifies
+expected repository source paths without extracting or executing files.
+A persisted SAF grant and SHA-256 permit later integrity re-checks with no ZIP
+duplication. At boot, AmpyRec can show an opt-in notification to revisit the
+source and HOME configuration.
+
+A separately built AmpyLauncher installed as Android's *default HOME* can
+appear after unlocking following a reboot. Android's standard Home-app
+selection is used; AmpyRec does not grant HOME to another app silently.
+This leaves GrapheneOS, SELinux, Verified Boot, encryption, user data and
+partitions unchanged. No executable LiveOS-from-uncompiled-source mechanism
+exists in this implementation.
+
+The real next milestone is a verified local Android APK compile for AmpyRec
+and AmpyLauncher, followed by on-device Home/ZIP/permission tests. A real
+AmpybiOS ROM must be built and signed externally for the Pixel 7 Pro.

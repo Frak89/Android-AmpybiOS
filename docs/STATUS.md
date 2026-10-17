@@ -96,3 +96,14 @@ AmpyCore alone holds the installed theme data. The original file is never
 deleted; selecting reference-only staging persists a read grant and hash,
 rather than copying the selected package. Execution on Android hardware is
 still unverified; the latest GitHub Actions job had no allocated runner.
+
+## Downloads source selection / HOME session (October 17)
+
+AmpyRec source now recognizes a user-selected `Downloads/AmpybiOS.zip`
+(with strict limits and full SHA-256) and retains a read-only SAF reference.
+It links to Android's default HOME selector for separately installed
+AmpyLauncher. This is a **userspace visual session**, not a RAM-booted ROM or
+the execution of uncompiled GrapheneOS sources. The boot receiver can show a
+user-visible notification; it does not auto-launch an Activity or flash images.
+AmpyRec dev version is 0.2.0-dev. **Neither AmpyRec nor AmpyLauncher APK is
+compiled and validated in this environment.**

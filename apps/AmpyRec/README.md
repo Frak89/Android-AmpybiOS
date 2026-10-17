@@ -145,3 +145,32 @@ No mode can modify firmware, existing user photos or account data. Same-ROM
 signed A/B OTA can normally preserve user data but is not implemented in this
 app. Initial migration from independently signed GrapheneOS **wipes data** due
 to bootloader unlock and ROM installation; export backups beforehand.
+
+## Source ZIP in Downloads → AmpybiOS graphical HOME session
+
+The standard Android document picker now starts in Downloads where supported.
+Choose the exact file **AmpybiOS.zip**. AmpyRec streams its compressed contents
+from the original SAF URI with strict limits (256 MiB ZIP, 1 GiB inflated,
+5,000 entries), validates safe paths, recognizes the expected AmpyCore,
+AmpyRec and AmpyLauncher project structure, and computes a full-file SHA-256.
+There is **no source extraction, dynamic compilation, DEX loading, chroot,
+recovery boot, RAM disk, partition change, or firmware install**.
+
+AmpyRec persists only the SAF read grant, source URI, digest and summary.
+It can revalidate the same file later or after reboot. If it changes, disappears,
+or access is revoked, revalidation fails closed and the original is not touched.
+
+**A source ZIP is never an executable Android system.** To use the available
+AmpybiOS-themed HOME interface instead, install a separately compiled
+`dev.ampybios.launcher` APK, then in AmpyRec select
+**Configura AmpyLauncher come Home Android**. Android requires user approval
+for the default HOME selection. On subsequent boots, after unlocking, Android
+uses the chosen HOME app automatically. GrapheneOS remains the underlying OS.
+AmpyRec can also launch AmpyLauncher immediately without a reboot.
+
+The user can revert the default HOME at any time in Settings → Apps → Default
+apps → Home. **No user-data wipe occurs from simply selecting a launcher.**
+The source archive is never executed or treated as a safe update payload.
+
+The installed APK still needs compilation and on-device tests; the GitHub Actions
+build environment has been failing before allocating any runner.

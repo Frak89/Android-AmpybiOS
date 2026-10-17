@@ -76,6 +76,21 @@ class AmpyRecContractTests(unittest.TestCase):
         self.assertIn('expectedRevision.equals(report.zipSha256)',state)
         self.assertIn("REQUEST_REFERENCE_ZIP",screen)
 
+    def test_home_session_never_executes_uncompiled_source(self):
+        activity=(APP / "java/dev/ampybios/rec/RecActivity.java").read_text()
+        inspector=(APP / "java/dev/ampybios/rec/SourceZipInspector.java").read_text()
+        session=(APP / "java/dev/ampybios/rec/SourceSession.java").read_text()
+        self.assertIn("REQUEST_SOURCE_ZIP",activity)
+        self.assertIn('AmpybiOS.zip',activity)
+        self.assertIn("ACTION_HOME_SETTINGS",activity)
+        self.assertIn("ZipInputStream",inspector)
+        self.assertIn("MAX_ENTRIES = 5000",inspector)
+        self.assertIn("takePersistableUriPermission",session)
+        self.assertIn("sha256",session)
+        self.assertNotIn("DexClassLoader",session)
+        self.assertNotIn("Runtime.getRuntime().exec",inspector)
+        self.assertTrue((APP.parent / "test/java/dev/ampybios/rec/SourceZipInspectorTest.java").is_file())
+
     def test_apk_workflow(self):
         self.assertTrue((ROOT/".github/workflows/ampyrec-apk.yml").is_file())
         self.assertTrue((ROOT/"scripts/build_ampyrec_local.sh").is_file())
