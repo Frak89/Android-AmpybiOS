@@ -27,13 +27,14 @@ import java.util.concurrent.Executors;
 public final class RecActivity extends Activity {
     private static final int REQUEST_ZIP=301;
     private static final int REQUEST_RAM_ZIP=303;
+    private static final int REQUEST_REFERENCE_ZIP=304;
     private static final int REQUEST_NOTIFICATIONS=302;
     private static final int BG=Color.rgb(6,9,22);
     private static final int ACCENT=Color.rgb(24,225,238);
     private static final int MUTED=Color.rgb(171,188,215);
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private TextView status, summary;
-    private Button choose, ramOnly, now, later, background, clear;
+    private Button choose, ramOnly, referenceOnly, now, later, background, clear;
     private volatile boolean destroyed;
     private boolean busy;
 
@@ -96,9 +97,11 @@ public final class RecActivity extends Activity {
         summary=text("Nessuna modifica in attesa",13,MUTED,false);
         body.addView(summary);
 
-        choose=button(body,"Seleziona e analizza ZIP per staging persistente",view->pickZip(false));
-        ramOnly=button(body,"Applica LIVE direttamente da RAM · senza copia ZIP",
-                view->pickZip(true));
+        referenceOnly=button(body,"Seleziona ZIP · conserva solo riferimento, nessuna copia",
+                view->pickZip(REQUEST_REFERENCE_ZIP));
+        choose=button(body,"Seleziona ZIP · copia privata per staging",view->pickZip(REQUEST_ZIP));
+        ramOnly=button(body,"Applica LIVE in RAM · immediatamente",
+                view->pickZip(REQUEST_RAM_ZIP));
         now=button(body,"2 · Applica LIVE adesso",view->applyNow());
         later=button(body,"3 · Rimanda al prossimo riavvio",view->deferInstall());
         background=button(body,"4 · Applica LIVE in background",view->schedule());
@@ -124,31 +127,38 @@ public final class RecActivity extends Activity {
         clear.setEnabled(pending&&!busy);
         choose.setEnabled(!busy);
         ramOnly.setEnabled(!busy);
+        referenceOnly.setEnabled(!busy);
+        String mode=RecState.prefs(this).getString("mode","disk");
         summary.setText("Stato: "+(state.isEmpty()?"nessuno":state)+
+                "\nStaging: "+("reference".equals(mode)?"URI SAF, nessuna copia":
+                        pending?"copia privata":"nessuno")+
                 "\n"+RecState.prefs(this).getString("message","")+
-                "\nFile privato: "+(pending?"AmpyRec/staged.zip":"nessuno")+
+                "\nFile privato: "+(pending&&"disk".equals(mode)?
+                        "AmpyRec/staged.zip":"nessuno")+
                 "\nNessuna scrittura nelle partizioni Android.");
     }
     private void show(String value) { status.setText(value); }
 
-    private void pickZip(boolean inMemory) {
+    private void pickZip(int mode) {
         Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES,
                 new String[]{"application/zip","application/octet-stream"});
-        startActivityForResult(intent,inMemory?REQUEST_RAM_ZIP:REQUEST_ZIP);
+        startActivityForResult(intent,mode);
     }
 
     @Override protected void onActivityResult(int request,int result,Intent data) {
         super.onActivityResult(request,result,data);
-        if((request!=REQUEST_ZIP&&request!=REQUEST_RAM_ZIP)||
-                result!=RESULT_OK||data==null||
+        if((request!=REQUEST_ZIP&&request!=REQUEST_RAM_ZIP&&
+                request!=REQUEST_REFERENCE_ZIP)||result!=RESULT_OK||data==null||
                 data.getData()==null) return;
         Uri uri=data.getData();
         final boolean memoryOnly=request==REQUEST_RAM_ZIP;
+        final boolean zeroCopy=request==REQUEST_REFERENCE_ZIP;
         busy=true; refreshButtons(); show(memoryOnly
                 ?"Analisi e applicazione direttamente in RAM…"
+                :zeroCopy?"Verifica ZIP e permesso persistente, senza copia…"
                 :"Copio e verifico lo ZIP privato…");
         worker.execute(()->{
             String message;
@@ -156,7 +166,9 @@ public final class RecActivity extends Activity {
                 if(memoryOnly) {
                     message=RecState.applyDirectFromRam(getApplicationContext(),uri);
                 } else {
-                    RecPackage.Report report=RecState.stage(getApplicationContext(),uri);
+                    RecPackage.Report report=zeroCopy
+                            ?RecState.stageReference(getApplicationContext(),uri)
+                            :RecState.stage(getApplicationContext(),uri);
                     message=report.description+"\nSHA-256: "+report.zipSha256+
                             "\nDimensioni ZIP: "+report.archiveBytes+" byte";
                     if(report.kind!=RecPackage.Kind.LIVE_THEME)
