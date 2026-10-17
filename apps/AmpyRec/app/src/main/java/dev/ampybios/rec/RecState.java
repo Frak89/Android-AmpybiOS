@@ -99,6 +99,8 @@ public final class RecState {
                     backup.delete();
                 }
                 boolean persisted = prefs(context).edit()
+                        .putString("mode", "disk")
+                        .remove("source_uri")
                         .putString("state", "staged")
                         .putString("hash", report.zipSha256)
                         .putString("kind", report.kind.name())
@@ -125,7 +127,18 @@ public final class RecState {
             if (!"staged".equals(state) && !"deferred".equals(state) &&
                     !"background".equals(state))
                 throw new IOException("Nessun aggiornamento LIVE approvato");
-            RecPackage.Report report = RecPackage.inspect(staged(context));
+            String mode = preferences.getString("mode","disk");
+            RecPackage.Report report;
+            if ("reference".equals(mode)) {
+                String source = preferences.getString("source_uri","");
+                if (source.isEmpty()) throw new IOException("Riferimento originale assente");
+                byte[] data = readRamBytes(context,Uri.parse(source));
+                report = RamPackageScanner.inspect(data);
+            } else if ("disk".equals(mode)) {
+                report = RecPackage.inspect(staged(context));
+            } else {
+                throw new IOException("Modalità staging sconosciuta");
+            }
             if (expectedRevision != null && !expectedRevision.equals(report.zipSha256))
                 throw new IOException("Aggiornamento sostituito; vecchio job annullato");
             if (report.kind != RecPackage.Kind.LIVE_THEME ||
@@ -154,7 +167,12 @@ public final class RecState {
                     .putString("state","applied")
                     .putString("message","AmpyCore ha confermato i temi LIVE").commit())
                 throw new IOException("Impossibile salvare lo stato confermato");
-            staged(context).delete();
+            if ("reference".equals(mode)) {
+                releaseReference(context, preferences.getString("source_uri",""));
+                preferences.edit().remove("source_uri").remove("mode").commit();
+            } else {
+                staged(context).delete();
+            }
             return "AmpyCore ha confermato l'installazione di "+ids.size()+
                     " temi (revisione "+report.zipSha256.substring(0,12)+")";
         }
@@ -168,23 +186,73 @@ public final class RecState {
      */
     public static String applyDirectFromRam(Context context, android.net.Uri selected)
             throws Exception {
-        ByteArrayOutputStream memory = new ByteArrayOutputStream();
-        try (InputStream stream = context.getContentResolver().openInputStream(selected)) {
-            if (stream == null) throw new IOException("ZIP non disponibile");
-            byte[] chunk = new byte[8192];
-            int read;
-            while ((read = stream.read(chunk)) != -1) {
-                if (memory.size() + read > RamPackageScanner.MAX_ZIP_BYTES)
-                    throw new IOException("ZIP oltre 256 KiB: RAM-only non disponibile");
-                memory.write(chunk,0,read);
-            }
-        }
-        RecPackage.Report report = RamPackageScanner.inspect(memory.toByteArray());
+        RecPackage.Report report=RamPackageScanner.inspect(readRamBytes(context,selected));
         if (report.kind != RecPackage.Kind.LIVE_THEME)
             throw new IOException("Pacchetto non consentito per RAM LIVE");
         deliverToCore(context,report);
         return "Applicazione LIVE confermata da AmpyCore senza staging ZIP su disco ("
                 +report.zipSha256.substring(0,12)+")";
+    }
+
+    private static byte[] readRamBytes(Context context, Uri source) throws IOException {
+        ByteArrayOutputStream memory = new ByteArrayOutputStream();
+        try (InputStream stream = context.getContentResolver().openInputStream(source)) {
+            if (stream == null) throw new IOException("File originale non disponibile");
+            byte[] chunk = new byte[8192];
+            int count;
+            while ((count=stream.read(chunk))!=-1) {
+                if (memory.size()+count > RamPackageScanner.MAX_ZIP_BYTES)
+                    throw new IOException("ZIP supera 256 KiB: RAM-only non disponibile");
+                memory.write(chunk,0,count);
+            }
+        }
+        return memory.toByteArray();
+    }
+
+    /**
+     * Reboot-safe, zero-copy deferred staging. The user's original SAF document
+     * must remain available; we store only its URI, read grant, and SHA-256.
+     * No ZIP is copied to AmpyRec's private filesystem.
+     */
+    public static RecPackage.Report stageReference(Context context, Uri source)
+            throws Exception {
+        RecPackage.Report report = RamPackageScanner.inspect(readRamBytes(context,source));
+        if (report.kind != RecPackage.Kind.LIVE_THEME)
+            throw new IOException("Pacchetto non supportato per staging senza copia");
+        synchronized (LOCK) {
+            // Acquisition must precede storing a URI; failure is non-destructive.
+            context.getContentResolver().takePersistableUriPermission(source,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            SharedPreferences preferences=prefs(context);
+            String old=preferences.getString("source_uri","");
+            cancelJob(context);
+            if (!preferences.edit()
+                    .putString("mode","reference")
+                    .putString("source_uri",source.toString())
+                    .putString("hash",report.zipSha256)
+                    .putString("kind",report.kind.name())
+                    .putString("state","staged")
+                    .putString("message","Riferimento SAF persistente: nessuna copia ZIP")
+                    .commit())
+                throw new IOException("Impossibile conservare il riferimento SAF");
+            if (!old.isEmpty() && !old.equals(source.toString()))
+                releaseReference(context,old);
+            // Older disk staging is no longer part of the active transaction.
+            File oldZip=staged(context);
+            if (oldZip.exists() && !oldZip.delete())
+                throw new IOException("Impossibile eliminare ZIP duplicato precedente");
+        }
+        return report;
+    }
+
+    private static void releaseReference(Context context,String value) {
+        if (value==null || value.isEmpty()) return;
+        try {
+            context.getContentResolver().releasePersistableUriPermission(
+                    Uri.parse(value),Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } catch (SecurityException ignored) {
+            // The permission may have been revoked by the document provider.
+        }
     }
 
     /** Shared single IPC transaction; never reports success without confirmation. */
@@ -272,9 +340,13 @@ public final class RecState {
     public static void cancelPending(Context context) {
         synchronized (LOCK) {
             cancelJob(context);
-            prefs(context).edit().remove("state").remove("hash")
-                    .remove("kind").remove("message").commit();
+            SharedPreferences preferences=prefs(context);
+            String old=preferences.getString("source_uri","");
+            preferences.edit().remove("state").remove("hash")
+                    .remove("kind").remove("message").remove("mode")
+                    .remove("source_uri").commit();
             staged(context).delete();
+            releaseReference(context,old);
         }
     }
 
