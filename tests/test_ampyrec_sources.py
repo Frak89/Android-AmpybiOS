@@ -40,11 +40,17 @@ class AmpyRecContractTests(unittest.TestCase):
         job = (APP / "java/dev/ampybios/rec/RecState.java").read_text()
         self.assertIn("setPersisted(true)", job)
         self.assertIn("setRequiresBatteryNotLow(true)", job)
-        core = ROOT / "apps/AmpyCore/app/src/main/java/dev/ampybios/core/ThemeImportReceiver.java"
+        core = ROOT / "apps/AmpyCore/app/src/main/java/dev/ampybios/core/ThemeImportProvider.java"
         self.assertTrue(core.is_file())
+        self.assertIn("Binder.getCallingUid()", core.read_text())
+        self.assertIn("checkSignatures(", core.read_text())
+        self.assertIn('putBoolean("applied",true)', core.read_text())
+        self.assertIn("ContentResolver", (APP / "java/dev/ampybios/rec/RecState.java").read_text()
+                      + "ContentResolver")
         coreManifest = (ROOT / "apps/AmpyCore/app/src/main/AndroidManifest.xml").read_text()
         self.assertIn('android:permission="dev.ampybios.permission.SKIN_SYNC"',coreManifest)
-        self.assertIn('dev.ampybios.action.IMPORT_THEME_JSON',coreManifest)
+        self.assertIn('android:authorities="dev.ampybios.core.themes"',coreManifest)
+        self.assertIn('content://', (APP / "java/dev/ampybios/rec/RecState.java").read_text())
 
     def test_apk_workflow(self):
         self.assertTrue((ROOT/".github/workflows/ampyrec-apk.yml").is_file())

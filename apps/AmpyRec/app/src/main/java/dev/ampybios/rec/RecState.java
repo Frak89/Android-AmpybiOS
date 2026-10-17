@@ -4,7 +4,10 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import java.util.ArrayList;
 import android.content.SharedPreferences;
 
 import java.io.File;
@@ -19,7 +22,7 @@ import java.nio.charset.StandardCharsets;
  */
 public final class RecState {
     public static final String SKIN_PERMISSION = "dev.ampybios.permission.SKIN_SYNC";
-    public static final String IMPORT_ACTION = "dev.ampybios.action.IMPORT_THEME_JSON";
+    public static final String THEME_AUTHORITY = "dev.ampybios.core.themes";
     public static final int JOB_ID = 2601701;
     private static final String STORE = "ampyrec.state";
     private static final Object LOCK = new Object();
@@ -128,29 +131,35 @@ public final class RecState {
                     throw new IOException("Impossibile sostituire tema");
                 if (!tmp.renameTo(target)) throw new IOException("Commit tema fallito");
             }
-            // The pointer is committed only after all theme assets are written.
+            // Never claim applied while AmpyCore is missing or signed differently.
+            PackageManager packageManager=context.getPackageManager();
+            if (packageManager.checkSignatures(context.getPackageName(),
+                    "dev.ampybios.core")!=PackageManager.SIGNATURE_MATCH)
+                throw new SecurityException("AmpyCore assente o firma differente");
+            ArrayList<String> ids=new ArrayList<>();
+            ArrayList<String> json=new ArrayList<>();
+            for (RecPackage.Theme theme:report.themes) {
+                ids.add(theme.id);
+                json.add(theme.content);
+            }
+            Bundle input=new Bundle();
+            input.putString("revision",report.zipSha256);
+            input.putStringArrayList("ids",ids);
+            input.putStringArrayList("json",json);
+            Bundle reply=context.getContentResolver().call(
+                    Uri.parse("content://"+THEME_AUTHORITY),"install-v1",null,input);
+            if (reply==null || !reply.getBoolean("applied",false) ||
+                    !report.zipSha256.equals(reply.getString("revision","")) ||
+                    reply.getInt("count",-1)!=ids.size())
+                throw new IOException("AmpyCore non ha confermato l'installazione");
+            // Acknowledgement is received from AmpyCore; only NOW mark applied.
             if (!preferences.edit().putString("active",report.zipSha256)
                     .putString("state","applied")
-                    .putString("message","Temi LIVE installati localmente").commit())
-                throw new IOException("Impossibile attivare il pacchetto");
-
-            // Signature-protected IPC: cooperating AmpyCore imports JSON into
-            // ITS OWN app-private storage; no system property/partition is changed.
-            for (RecPackage.Theme theme : report.themes) {
-                Intent event = new Intent(IMPORT_ACTION);
-                event.setPackage("dev.ampybios.core");
-                event.putExtra("id", theme.id);
-                event.putExtra("json", theme.content);
-                try {
-                    context.sendBroadcast(event, SKIN_PERMISSION);
-                } catch (SecurityException notSameSigner) {
-                    // The private theme installation remains valid.
-                    // Sender/certificate mismatch must never bypass permission.
-                }
-            }
-            staged(context).delete(); // Keep only activated JSON data, not stale ZIP.
-            return "Applicati "+report.themes.size()+
-                    " temi nell'area privata AmpyRec; inviati ad AmpyCore se firmato con la stessa chiave.";
+                    .putString("message","AmpyCore ha confermato i temi LIVE").commit())
+                throw new IOException("Impossibile salvare lo stato confermato");
+            staged(context).delete();
+            return "AmpyCore ha confermato l'installazione di "+ids.size()+
+                    " temi (revisione "+report.zipSha256.substring(0,12)+")";
         }
     }
 

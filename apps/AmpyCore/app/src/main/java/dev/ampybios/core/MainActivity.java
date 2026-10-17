@@ -283,9 +283,13 @@ public final class MainActivity extends Activity {
     private InputStream getThemeStream(String id) throws java.io.IOException {
         // Uploaded overrides are accepted ONLY by the signature-protected
         // receiver, under a bounded JSON schema, and retained privately.
-        java.io.File custom = new java.io.File(
-                new java.io.File(getFilesDir(), "AmpyRecThemes"), id + ".json");
-        if (custom.isFile()) return new java.io.FileInputStream(custom);
+        java.io.File base = new java.io.File(getFilesDir(), "AmpyRecThemes/releases");
+        String active = settings.getString("ampyrec.active", "");
+        if (active.matches("[a-f0-9]{64}")) {
+            java.io.File custom = new java.io.File(
+                    new java.io.File(base, active), id + ".json");
+            if (custom.isFile()) return new java.io.FileInputStream(custom);
+        }
         return getAssets().open(id + ".json");
     }
 
