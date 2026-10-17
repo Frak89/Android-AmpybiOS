@@ -8,14 +8,14 @@ public final class LiveApplyJob extends JobService {
     private volatile Thread worker;
 
     @Override public boolean onStartJob(JobParameters params) {
+        final String revision=RecState.queuedRevision(getApplicationContext());
+        if (revision==null) return false; // stale or cancelled job
         worker=new Thread(() -> {
             try {
-                RecState.apply(getApplicationContext());
+                RecState.apply(getApplicationContext(),revision);
             } catch (Exception error) {
-                RecState.prefs(this).edit()
-                        .putString("state","deferred")
-                        .putString("message","Installazione rinviata: "+
-                                error.getClass().getSimpleName()).apply();
+                RecState.markDeferredIfCurrent(getApplicationContext(),revision,
+                        "Installazione rinviata: "+error.getClass().getSimpleName());
             } finally {
                 jobFinished(params,false);
             }

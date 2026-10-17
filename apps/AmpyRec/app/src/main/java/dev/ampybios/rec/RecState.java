@@ -104,6 +104,11 @@ public final class RecState {
     }
 
     public static String apply(Context context) throws Exception {
+        return apply(context, null);
+    }
+
+    /** If background work belongs to an obsolete ZIP, it must never apply. */
+    public static String apply(Context context, String expectedRevision) throws Exception {
         synchronized (LOCK) {
             SharedPreferences preferences = prefs(context);
             String state = preferences.getString("state", "");
@@ -111,6 +116,8 @@ public final class RecState {
                     !"background".equals(state))
                 throw new IOException("Nessun aggiornamento LIVE approvato");
             RecPackage.Report report = RecPackage.inspect(staged(context));
+            if (expectedRevision != null && !expectedRevision.equals(report.zipSha256))
+                throw new IOException("Aggiornamento sostituito; vecchio job annullato");
             if (report.kind != RecPackage.Kind.LIVE_THEME ||
                     !report.zipSha256.equals(preferences.getString("hash","")))
                 throw new IOException("Lo ZIP è cambiato dopo la verifica");
@@ -164,25 +171,54 @@ public final class RecState {
     }
 
     public static void defer(Context context) {
-        prefs(context).edit().putString("state","deferred").apply();
+        synchronized (LOCK) {
+            prefs(context).edit().putString("state","deferred").commit();
+        }
+    }
+
+    public static String queuedRevision(Context context) {
+        synchronized (LOCK) {
+            SharedPreferences preferences=prefs(context);
+            if (!"background".equals(preferences.getString("state","")))
+                return null;
+            return preferences.getString("hash",null);
+        }
+    }
+
+    /** Do not resurrect a cancelled job or overwrite the state of a newer ZIP. */
+    public static void markDeferredIfCurrent(Context context, String revision,
+                                             String reason) {
+        synchronized (LOCK) {
+            SharedPreferences preferences=prefs(context);
+            if (revision != null && revision.equals(preferences.getString("hash","")) &&
+                    "background".equals(preferences.getString("state",""))) {
+                preferences.edit().putString("state","deferred")
+                        .putString("message", reason).commit();
+            }
+        }
     }
 
     public static boolean scheduleBackground(Context context) {
-        SharedPreferences preferences=prefs(context);
-        if (!"staged".equals(preferences.getString("state","")) &&
-                !"deferred".equals(preferences.getString("state","")))
-            return false;
-        JobScheduler jobs=context.getSystemService(JobScheduler.class);
-        if (jobs==null) return false;
-        JobInfo task=new JobInfo.Builder(JOB_ID,
-                new ComponentName(context,LiveApplyJob.class))
-                .setRequiresBatteryNotLow(true)
-                .setRequiresStorageNotLow(true)
-                .setPersisted(true)
-                .build();
-        if (jobs.schedule(task)!=JobScheduler.RESULT_SUCCESS) return false;
-        preferences.edit().putString("state","background").apply();
-        return true;
+        synchronized (LOCK) {
+            SharedPreferences preferences=prefs(context);
+            if (!"staged".equals(preferences.getString("state","")) &&
+                    !"deferred".equals(preferences.getString("state","")))
+                return false;
+            JobScheduler jobs=context.getSystemService(JobScheduler.class);
+            if (jobs==null) return false;
+            JobInfo task=new JobInfo.Builder(JOB_ID,
+                    new ComponentName(context,LiveApplyJob.class))
+                    .setRequiresBatteryNotLow(true)
+                    .setRequiresStorageNotLow(true)
+                    .setPersisted(true)
+                    .build();
+            if (jobs.schedule(task)!=JobScheduler.RESULT_SUCCESS) return false;
+            if (!preferences.edit().putString("state","background").commit()) {
+                jobs.cancel(JOB_ID);
+                return false;
+            }
+            return true;
+        }
     }
 
     /** Cancel only under the same lock used by stage/apply. */
