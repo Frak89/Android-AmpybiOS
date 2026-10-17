@@ -11,3 +11,7 @@
 7. Third-party APKs are not redistributed or bundled until signatures, licenses, update responsibility, Google-free operation, push notification limitations and provenance are reviewed.
 8. AmpyCam/AmpyRaw camera and CR3 parsing should run with least privilege and isolate native decoders handling untrusted media files.
 9. AmpyRadar visual borders are UI indicators and do not add isolation beyond Android's actual sandboxing.
+
+10. A bootanimation ZIP is admitted to the checkout only after bounded PNG chunk
+    CRC/dimension and ZIP name/integrity checks, before device file modification.
+    It is still untrusted developer artwork until tested in the OS.

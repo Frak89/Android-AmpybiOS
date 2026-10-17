@@ -32,6 +32,11 @@ if grep -q "BEGIN AMPYBIOS DEVICE INTEGRATION" "$DEVICE"; then
     exit 4
   }
 fi
+# Validate the optional archive BEFORE modifying device files.
+if [[ -n "${AMPY_BOOTANIMATION_ZIP:-}" ]]; then
+  [[ -f "$AMPY_BOOTANIMATION_ZIP" ]] || { echo "Missing AMPY_BOOTANIMATION_ZIP" >&2; exit 4; }
+  python3 "$ROOT/scripts/verify_bootanimation.py" "$AMPY_BOOTANIMATION_ZIP"
+fi
 if [[ "$DRY_RUN" == true ]]; then
   echo "DRY RUN: would stage AmpyCore native app into $TARGET"
   echo "DRY RUN: would add product include to $DEVICE (once)"
