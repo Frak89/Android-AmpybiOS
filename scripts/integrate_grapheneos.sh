@@ -47,7 +47,6 @@ for app in AmpyCam AmpyRaw AmpyConnect; do
   enabled="$AMPY_INCLUDE_CAM"
   if [[ "$app" == AmpyRaw ]]; then enabled="$AMPY_INCLUDE_RAW"; fi
   if [[ "$app" == AmpyConnect ]]; then enabled="$AMPY_INCLUDE_CONNECT"; fi
-  if [[ "$app" == AmpyConnect ]]; then enabled="$AMPY_INCLUDE_CONNECT"; fi
   if [[ "$enabled" == 1 ]]; then
     for required in "$ROOT/apps/$app/app/src/main/AndroidManifest.xml" \
         "$ROOT/platform/$app/Android.bp" "$ROOT/apps/$app/app/src/main/java"; do
@@ -75,6 +74,7 @@ cp "$PRODUCT_SRC" "$TARGET/product.mk"
 for app in AmpyCam AmpyRaw AmpyConnect; do
   enabled="$AMPY_INCLUDE_CAM"
   if [[ "$app" == AmpyRaw ]]; then enabled="$AMPY_INCLUDE_RAW"; fi
+  if [[ "$app" == AmpyConnect ]]; then enabled="$AMPY_INCLUDE_CONNECT"; fi
   if [[ "$enabled" != 1 ]]; then continue; fi
   dest="$TARGET/apps/$app"
   source="$ROOT/apps/$app/app/src/main"
