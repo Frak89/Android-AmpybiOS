@@ -106,3 +106,7 @@ All three are separate Android Studio projects and are **not confirmed
 compiled**. Opt into packaging Cam/Raw in an AOSP development ROM with
 `AMPY_INCLUDE_CAM=1 AMPY_INCLUDE_RAW=1` (disabled by default); see
 [Android source integration](docs/SOURCE_INTEGRATION.md).
+
+- [AmpyConnect](apps/AmpyConnect/README.md): standalone HTTPS-only, read-only
+  Home Assistant state viewer. No background polling or actuator commands.
+  Opt in during developer ROM staging with `AMPY_INCLUDE_CONNECT=1`.

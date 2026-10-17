@@ -71,3 +71,11 @@ The script copies only the app's Java/resources/assets/manifest into managed
 `PRODUCT_PACKAGES` entries. Neither app gets privileged/system UID rights.
 The flags default to 0 until builds and Pixel tests pass. The signature-protected
 theme sync requires the modules to be signed by the same key.
+
+### Read-only AmpyConnect
+
+The standalone `AmpyConnect` development module can also be staged with
+`AMPY_INCLUDE_CONNECT=1`. It uses only user-entered HTTPS
+`GET /api/states` for a Home Assistant server, stores no access token, and
+does not control equipment. It needs the normal `INTERNET` permission,
+not Android privileged permissions. All optional modules still default to off.

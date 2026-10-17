@@ -34,7 +34,7 @@ stages AmpyCore after vendor extraction. Upstream OTA server remains disabled.
 | OTA | Dev configuration only | Independent signing, updater, server, AB OTA |
 | AmpyRaw photo editor | Basic native preview/edit/export source added | APK compile, export resolution/quality/device tests |
 | AmpyRaw CR3/DNG decoder | **Not implemented** | LibRaw integration + safety/licensing review |
-| AmpyConnect | **Not implemented** | Secure local protocol support |
+| AmpyConnect | Home Assistant HTTPS read-only source prototype | APK build, TLS/device validation, local gateway tests |
 | AmpyLauncher / SystemUI | **Not implemented** | Reproducible framework patches and tests |
 | Secure root variant | **Not implemented** | Threat model / signing review |
 

@@ -38,7 +38,8 @@
 - [ ] AmpyRaw safe LibRaw-based DNG/CR3 decoding (Canon EOS R6 Mark II samples)
 - [x] Shared four-theme JSON palette/corner contract in AmpyCore and AmpyCam
 - [ ] Cross-app theme event service via safe ROM framework API
-- [ ] AmpyConnect MQTT, Bluetooth LE, USB, HTTP, Home Assistant; guard PLC writes
+- [x] AmpyConnect read-only HTTPS Home Assistant entity viewer (source only)
+- [ ] AmpyConnect device testing, MQTT/BLE/USB and safe explicit authorizations for commands
 
 ## M5 — measured performance
 - [x] Eco / Balanced / Fusion Extreme adaptive *AmpyCore-only* preview profile logic

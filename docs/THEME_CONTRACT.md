@@ -23,3 +23,7 @@ automatic following until re-enabled.
 this path; Android Studio debug keys from different computers usually differ.
 A signature mismatch fails closed without granting external apps access.
 This is a local IPC prototype, **not global Android/SystemUI skinning**.
+
+`AmpyConnect` now uses the same signing-protected broadcast and the same four
+JSON skins. Its Home Assistant bearer token is strictly ephemeral and is never
+included in theme messages.

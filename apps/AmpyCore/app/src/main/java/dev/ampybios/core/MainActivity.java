@@ -261,10 +261,14 @@ public final class MainActivity extends Activity {
             status.setText("Tema " + theme.label + " caricato · Sincronizzazione AmpyCam attiva");
             // App-scoped, signature-protected explicit broadcast. This does not
             // and cannot modify other apps or Android SystemUI.
-            Intent themeChange = new Intent(SKIN_ACTION);
-            themeChange.setPackage("dev.ampybios.cam");
-            themeChange.putExtra("theme", id);
-            sendBroadcast(themeChange, SKIN_PERMISSION);
+            for (String target : new String[]{
+                    "dev.ampybios.cam", "dev.ampybios.raw",
+                    "dev.ampybios.connect"}) {
+                Intent themeChange = new Intent(SKIN_ACTION);
+                themeChange.setPackage(target);
+                themeChange.putExtra("theme", id);
+                sendBroadcast(themeChange, SKIN_PERMISSION);
+            }
         } catch (Exception error) {
             updating = false;
             status.setText("Tema non disponibile: " + error.getClass().getSimpleName());
