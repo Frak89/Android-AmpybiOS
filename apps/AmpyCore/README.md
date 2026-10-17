@@ -57,7 +57,8 @@ is preserved across upgrades.
 ## AmpyRec LIVE theme imports
 
 The [AmpyRec](../AmpyRec/README.md) APK verifies bounded ZIP packages then
-can send a **signature-guarded** `IMPORT_THEME_JSON` broadcast to AmpyCore.
-AmpyCore validates these assets again and stores per-theme JSON in its private
-storage, making imported palettes available when the editor resumes.
+can call AmpyCore's **signature-guarded** synchronous theme provider.
+AmpyCore validates the complete batch again, commits its versioned theme
+directory, returns a revision-matched acknowledgement, and makes the new
+palette available when the editor resumes.
 It does not modify ROM partitions or third-party apps.

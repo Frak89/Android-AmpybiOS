@@ -45,8 +45,11 @@ class AmpyRecContractTests(unittest.TestCase):
         self.assertIn("Binder.getCallingUid()", core.read_text())
         self.assertIn("checkSignatures(", core.read_text())
         self.assertIn('putBoolean("applied",true)', core.read_text())
-        self.assertIn("ContentResolver", (APP / "java/dev/ampybios/rec/RecState.java").read_text()
-                      + "ContentResolver")
+        state = (APP / "java/dev/ampybios/rec/RecState.java").read_text()
+        self.assertIn('getContentResolver().call(', state)
+        self.assertIn('PackageManager.SIGNATURE_MATCH', state)
+        self.assertIn('markDeferredIfCurrent', state)
+        self.assertIn('queuedRevision', state)
         coreManifest = (ROOT / "apps/AmpyCore/app/src/main/AndroidManifest.xml").read_text()
         self.assertIn('android:permission="dev.ampybios.permission.SKIN_SYNC"',coreManifest)
         self.assertIn('android:authorities="dev.ampybios.core.themes"',coreManifest)
@@ -55,6 +58,10 @@ class AmpyRecContractTests(unittest.TestCase):
     def test_apk_workflow(self):
         self.assertTrue((ROOT/".github/workflows/ampyrec-apk.yml").is_file())
         self.assertTrue((ROOT/"scripts/build_ampyrec_local.sh").is_file())
+        verifier = (ROOT/"scripts/verify_ampyrec_apk.sh").read_text()
+        self.assertIn('apksigner', verifier)
+        self.assertIn('sha256sum', verifier)
+        self.assertIn('dev.ampybios.rec', verifier)
 
 if __name__ == "__main__":
     unittest.main()

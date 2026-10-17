@@ -39,10 +39,13 @@ Use only packages from sources you trust.
 
 The content becomes a new immutable `releases/<ZIP_HASH>` folder in the app
 private storage. A single SharedPreferences pointer activates the completed
-release. The optional, signature-permission broadcast sends small verified
-JSON assets into AmpyCore's private theme area, where they are validated again.
-**AmpyRec and AmpyCore must be signed by the SAME certificate** for live sync
-to work. AmpyRAW uses its own signer and is not modified.
+release. A signature-permission protected **ContentProvider.call()** sends the validated
+release to AmpyCore synchronously. AmpyRec checks matching app certificates
+before invoking the provider. AmpyCore validates the entire batch again,
+commits its own private release atomically, and returns a positive acknowledgement.
+Only after confirming that response does AmpyRec mark the update **applied**.
+On error it remains staged for explicit retry. **Both APKs must share the
+same signing certificate**. AmpyRAW remains independent.
 
 ## The three buttons after verifying a LIVE ZIP
 
@@ -79,6 +82,7 @@ Gradle 9.4.1, JDK 17+), or run:
 ```bash
 bash scripts/build_ampyrec_local.sh --doctor
 bash scripts/build_ampyrec_local.sh build
+bash scripts/verify_ampyrec_apk.sh apps/AmpyRec/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 After an actual successful build, expected output:
@@ -86,12 +90,18 @@ After an actual successful build, expected output:
 
 No compiled APK or signed update payload is bundled with the sources.
 
-## Create a realistic demo ZIP from versioned theme assets
 
-```bash
-python3 scripts/make_ampyrec_demo.py --output /tmp/AmpyRec-demo.zip \
-  --themes fusion cyberpunk futuristic minimal
-```
+## Release engineering gates
 
-Import the ZIP in AmpyRec to test the real scanner and optional
-AmpyCore theme bridge. This is **not** firmware and cannot flash a Pixel.
+**No release APK exists yet.** A distributable build requires an actual SDK 37
+compilation, reproducible artifact hash, real APK signature verification,
+instrumented ZIP scanner tests, IPC tests with both APKs signed by the same
+key, reboot/deferred-job tests on Pixel 7 Pro and explicit signing/rollback
+policy. The CI job will reject invalid package IDs and unintended permissions
+after successful compilation. Never publish debug keys or test artifacts as a
+production release.
+
+**Trust boundary:** an embedded SHA-256 proves integrity of the selected ZIP's
+contents, not its publisher. For unattended *system* updates, a separately
+pinned trusted signing key and verified A/B OTA pipeline are mandatory. AmpyRec
+does not claim to install source ZIPs, ROMs, kernels or SystemUI.

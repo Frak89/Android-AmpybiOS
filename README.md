@@ -147,5 +147,5 @@ via notification and deferrable jobs that survive reboots. "AmpyRec" is a
 Unsigned firmware/system ZIPs and source archives are never installed by it.
 [Architecture and limits](docs/AMPYREC.md).
 
-To produce a test package (no firmware), run
-`python3 scripts/make_ampyrec_demo.py --output AmpyRec-demo.zip`.
+Production status: source staged, APK compilation and hardware validation
+blocked by GitHub Actions runner allocation. See the [release gates](apps/AmpyRec/README.md).

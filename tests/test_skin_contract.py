@@ -23,6 +23,15 @@ class SkinContractTests(unittest.TestCase):
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].get(ANDROID + "protectionLevel"), "signature")
 
+    def test_core_import_is_signature_protected_provider(self):
+        root=manifest("AmpyCore")
+        providers=root.findall("./application/provider")
+        matching=[p for p in providers
+                  if p.get(ANDROID+"authorities")=="dev.ampybios.core.themes"]
+        self.assertEqual(len(matching),1)
+        self.assertEqual(matching[0].get(ANDROID+"permission"),PERMISSION)
+        self.assertEqual(matching[0].get(ANDROID+"exported"),"true")
+
     def test_optin_apps_restrict_incoming_broadcast(self):
         for app in ("AmpyCam", "AmpyConnect", "AmpyLauncher"):
             with self.subTest(app=app):

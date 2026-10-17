@@ -8,6 +8,7 @@ on:
       - 'apps/AmpyRec/**'
       - 'scripts/build_ampyrec_local.sh'
       - 'scripts/build_ampycore_local.sh'
+      - 'scripts/verify_ampyrec_apk.sh'
       - '.github/workflows/ampyrec-apk.yml'
 
 permissions:
@@ -33,6 +34,8 @@ jobs:
         run: bash scripts/build_ampyrec_local.sh --doctor
       - name: Compile AmpyRec debug APK
         run: bash scripts/build_ampyrec_local.sh build
+      - name: Verify compiled APK identity, signature, permissions and digest
+        run: bash scripts/verify_ampyrec_apk.sh apps/AmpyRec/app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
           name: AmpyRec-debug-apk

@@ -60,3 +60,15 @@ The storage location `files/AmpyRec` is NOT a physical partition.
 As observed on 2026-10-17, the AmpyRec GitHub Actions build fails without a
 runner or compiler step (`runner_name=null`, `steps=[]`). **No debug APK or
 tested ROM has yet been generated.** See [AmpyRec](AMPYREC.md).
+
+## Engineering correction — signature-acknowledged AmpyRec
+
+The original asynchronous theme broadcast reported success without
+confirmation. It has been replaced by a protected, synchronous provider call
+requiring signature matching and an explicit acknowledgement. The consumer
+versions its assets and commits an atomic release pointer. Background jobs
+carry a SHA-256 revision guard to reject stale/cancelled work.
+
+The APK workflow now includes a post-build APK signature/package/permissions
+gate, but GitHub Actions is still unable to allocate a runner. This verifies
+source controls **only**, not a compiled binary.
