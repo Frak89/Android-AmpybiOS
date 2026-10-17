@@ -137,3 +137,15 @@ AmpyKernel M1 is a **version-pinned, opt-in** schedutil experiment (a 2 ms
 minimum startup rate limit). Kconfig defaults **off**, and a guard checks the
 full source commit and upstream blobs. Git patch apply/revert has been checked
 in a host-only fixture. No Pixel kernel image or APK was compiled here.
+
+## AmpyRec ZIP inspector / installation staging
+
+[AmpyRec](apps/AmpyRec/README.md) adds a separate Android Studio APK project
+for bounded ZIP analysis, user-confirmed LIVE theme updates, reboot reminders
+via notification and deferrable jobs that survive reboots. "AmpyRec" is a
+**private folder, never a physical partition or recovery installer**.
+Unsigned firmware/system ZIPs and source archives are never installed by it.
+[Architecture and limits](docs/AMPYREC.md).
+
+To produce a test package (no firmware), run
+`python3 scripts/make_ampyrec_demo.py --output AmpyRec-demo.zip`.

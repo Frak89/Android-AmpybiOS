@@ -53,3 +53,11 @@ Android may ignore the preference for power/thermal/display considerations.
 No global refresh setting, CPU/GPU frequency, device power saver, root, SELinux
 or kernel setting is modified. The previous user-selected performance profile
 is preserved across upgrades.
+
+## AmpyRec LIVE theme imports
+
+The [AmpyRec](../AmpyRec/README.md) APK verifies bounded ZIP packages then
+can send a **signature-guarded** `IMPORT_THEME_JSON` broadcast to AmpyCore.
+AmpyCore validates these assets again and stores per-theme JSON in its private
+storage, making imported palettes available when the editor resumes.
+It does not modify ROM partitions or third-party apps.

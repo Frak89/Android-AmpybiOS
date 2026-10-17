@@ -85,3 +85,13 @@ After an actual successful build, expected output:
 `apps/AmpyRec/app/build/outputs/apk/debug/app-debug.apk`.
 
 No compiled APK or signed update payload is bundled with the sources.
+
+## Create a realistic demo ZIP from versioned theme assets
+
+```bash
+python3 scripts/make_ampyrec_demo.py --output /tmp/AmpyRec-demo.zip \
+  --themes fusion cyberpunk futuristic minimal
+```
+
+Import the ZIP in AmpyRec to test the real scanner and optional
+AmpyCore theme bridge. This is **not** firmware and cannot flash a Pixel.
