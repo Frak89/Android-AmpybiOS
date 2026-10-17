@@ -244,6 +244,9 @@ public final class RawActivity extends Activity {
 
     private void loadImage(Uri uri) {
         int token = jobToken.incrementAndGet();
+        original = null;
+        preview.setImageDrawable(null);
+        exportButton.setEnabled(false);
         sourceUri = uri;
         sourceName = displayName(uri);
         String filename = sourceName.toLowerCase(Locale.ROOT);

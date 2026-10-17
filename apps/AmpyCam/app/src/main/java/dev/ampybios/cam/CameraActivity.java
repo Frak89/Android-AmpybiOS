@@ -84,6 +84,7 @@ public final class CameraActivity extends Activity {
     private volatile boolean activityVisible;
     private boolean opening;
     private boolean capturePending;
+    private long captureGeneration;
     private Image pendingRaw;
     private TotalCaptureResult pendingResult;
 
@@ -149,7 +150,10 @@ public final class CameraActivity extends Activity {
                 String name = THEMES[position];
                 SharedPreferences.Editor editor = themePreferences.edit()
                         .putString("theme", name);
-                if (!settingThemeFromCore) {
+                // Spinner callback for a programmatic synchronization arrives
+                // asynchronously: do not interpret it as a manual override.
+                if (!settingThemeFromCore &&
+                        !name.equals(themePreferences.getString("theme", "fusion"))) {
                     editor.putBoolean("follow_core", false);
                     if (followCore != null) followCore.setChecked(false);
                 }
@@ -413,6 +417,7 @@ public final class CameraActivity extends Activity {
         if (!activityVisible || session == null || device == null ||
                 cameraHandler == null || capturePending) return;
         capturePending = true;
+        final long generation = ++captureGeneration;
         canCapture(false);
         show("Acquisizione RAW in corso...");
         try {
@@ -433,7 +438,9 @@ public final class CameraActivity extends Activity {
             // Recover the shutter even when a device delivers neither a result
             // nor a failure callback. Executed on the same camera worker queue.
             cameraHandler.postDelayed(() -> {
-                if (capturePending) clearPending("Timeout acquisizione RAW");
+                if (capturePending && captureGeneration == generation) {
+                    clearPending("Timeout acquisizione RAW");
+                }
             }, 8000);
         } catch (CameraAccessException | RuntimeException error) {
             clearPending("Impossibile scattare: " + error.getClass().getSimpleName());
@@ -459,6 +466,11 @@ public final class CameraActivity extends Activity {
 
     private void saveIfReady() {
         if (!capturePending || pendingRaw == null || pendingResult == null) return;
+        Long sensorTs = pendingResult.get(android.hardware.camera2.CaptureResult.SENSOR_TIMESTAMP);
+        if (sensorTs == null || pendingRaw.getTimestamp() != sensorTs.longValue()) {
+            clearPending("I metadati RAW non corrispondono al frame");
+            return;
+        }
         Uri output = null;
         boolean saved = false;
         try {
@@ -504,6 +516,7 @@ public final class CameraActivity extends Activity {
         }
         pendingResult = null;
         capturePending = false;
+        captureGeneration++;
         canCapture(device != null && session != null);
         if (message != null) show(message);
     }

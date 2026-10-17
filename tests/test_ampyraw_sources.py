@@ -13,7 +13,7 @@ class AmpyRawStructure(unittest.TestCase):
                       "ColorMatrixColorFilter", "inSampleSize", "BitmapFactory",
                       "decoder CR3/DNG via LibRaw non è ancora integrato"):
             self.assertIn(token, java)
-        self.assertIn("signature", manifest)
+        self.assertIn('android:permission="dev.ampybios.permission.SKIN_SYNC"', manifest)
     def test_gradle_shared_theme(self):
         s = (ROOT / "apps/AmpyRaw/app/build.gradle.kts").read_text()
         self.assertIn("compileSdk = 37", s)
