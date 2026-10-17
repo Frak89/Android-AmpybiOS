@@ -293,13 +293,14 @@ public final class CameraActivity extends Activity {
             camera.close();
             device = null;
             opening = false;
+            closeCamera();
             show("Fotocamera scollegata");
         }
         @Override public void onError(CameraDevice camera, int error) {
             camera.close();
             device = null;
             opening = false;
-            canCapture(false);
+            closeCamera();
             show("Errore Camera2: " + error);
         }
     };
@@ -352,11 +353,13 @@ public final class CameraActivity extends Activity {
                             }
                         }
                         @Override public void onConfigureFailed(CameraCaptureSession failed) {
-                            canCapture(false);
+                            failed.close();
+                            closeCamera();
                             show("Configurazione fotocamera RAW non riuscita");
                         }
                     }, cameraHandler);
         } catch (CameraAccessException | RuntimeException e) {
+            closeCamera();
             show("RAW non disponibile: " + e.getClass().getSimpleName());
         }
     }
@@ -382,6 +385,11 @@ public final class CameraActivity extends Activity {
                     clearPending("Scatto RAW non riuscito");
                 }
             }, cameraHandler);
+            // Recover the shutter even when a device delivers neither a result
+            // nor a failure callback. Executed on the same camera worker queue.
+            cameraHandler.postDelayed(() -> {
+                if (capturePending) clearPending("Timeout acquisizione RAW");
+            }, 8000);
         } catch (CameraAccessException | RuntimeException error) {
             clearPending("Impossibile scattare: " + error.getClass().getSimpleName());
         }
@@ -433,7 +441,13 @@ public final class CameraActivity extends Activity {
         } catch (Exception e) {
             show("Salvataggio fallito: " + e.getClass().getSimpleName());
         } finally {
-            if (!saved && output != null) getContentResolver().delete(output, null, null);
+            if (!saved && output != null) {
+                try {
+                    getContentResolver().delete(output, null, null);
+                } catch (RuntimeException ignored) {
+                    // Cleanup is best-effort; still release RAW memory and shutter state.
+                }
+            }
             clearPending(null);
         }
     }
