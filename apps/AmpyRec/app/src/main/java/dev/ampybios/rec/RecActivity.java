@@ -33,7 +33,7 @@ public final class RecActivity extends Activity {
     private static final int MUTED=Color.rgb(171,188,215);
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private TextView status, summary;
-    private Button choose, now, later, background, clear;
+    private Button choose, ramOnly, now, later, background, clear;
     private volatile boolean destroyed;
     private boolean busy;
 
@@ -97,7 +97,7 @@ public final class RecActivity extends Activity {
         body.addView(summary);
 
         choose=button(body,"Seleziona e analizza ZIP per staging persistente",view->pickZip(false));
-        button(body,"Applica LIVE direttamente da RAM · senza copia ZIP",
+        ramOnly=button(body,"Applica LIVE direttamente da RAM · senza copia ZIP",
                 view->pickZip(true));
         now=button(body,"2 · Applica LIVE adesso",view->applyNow());
         later=button(body,"3 · Rimanda al prossimo riavvio",view->deferInstall());
@@ -123,6 +123,7 @@ public final class RecActivity extends Activity {
         background.setEnabled(pending&&!busy);
         clear.setEnabled(pending&&!busy);
         choose.setEnabled(!busy);
+        ramOnly.setEnabled(!busy);
         summary.setText("Stato: "+(state.isEmpty()?"nessuno":state)+
                 "\n"+RecState.prefs(this).getString("message","")+
                 "\nFile privato: "+(pending?"AmpyRec/staged.zip":"nessuno")+
@@ -130,13 +131,13 @@ public final class RecActivity extends Activity {
     }
     private void show(String value) { status.setText(value); }
 
-    private void pickZip(boolean ramOnly) {
+    private void pickZip(boolean inMemory) {
         Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES,
                 new String[]{"application/zip","application/octet-stream"});
-        startActivityForResult(intent,ramOnly?REQUEST_RAM_ZIP:REQUEST_ZIP);
+        startActivityForResult(intent,inMemory?REQUEST_RAM_ZIP:REQUEST_ZIP);
     }
 
     @Override protected void onActivityResult(int request,int result,Intent data) {

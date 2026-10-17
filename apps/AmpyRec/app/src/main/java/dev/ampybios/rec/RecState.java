@@ -69,7 +69,16 @@ public final class RecState {
                 }
                 RecPackage.Report report = RecPackage.inspect(tmp);
                 // Arbitrary source ZIP and unsigned system OTA are read-only analysis.
-                if (report.kind != RecPackage.Kind.LIVE_THEME) return report;
+                if (report.kind != RecPackage.Kind.LIVE_THEME) {
+                    // A newly selected non-installable archive invalidates old
+                    // pending state: the UI must never offer applying an older ZIP.
+                    cancelJob(context);
+                    prefs(context).edit().remove("state").remove("hash")
+                            .remove("kind").remove("message").commit();
+                    if (dest.exists() && !dest.delete())
+                        throw new IOException("Impossibile eliminare staging precedente");
+                    return report;
+                }
                 // A previously scheduled job must not run against a replaced ZIP.
                 cancelJob(context);
                 try {
