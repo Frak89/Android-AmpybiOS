@@ -22,6 +22,17 @@ public final class BootReminder extends BroadcastReceiver {
     @Override public void onReceive(Context context, Intent intent) {
         if (intent==null || !Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
         String state=RecState.prefs(context).getString("state","");
+        if ("background".equals(state)) {
+            // Recover if Android restored app data without a persisted job.
+            android.app.job.JobScheduler scheduler=
+                    context.getSystemService(android.app.job.JobScheduler.class);
+            if (scheduler != null && scheduler.getPendingJob(RecState.JOB_ID)!=null)
+                return;
+            RecState.markDeferredIfCurrent(context,
+                    RecState.prefs(context).getString("hash",null),
+                    "Job di background assente dopo il riavvio; conferma necessaria");
+            state=RecState.prefs(context).getString("state","");
+        }
         if (!"deferred".equals(state) && !"staged".equals(state)) return;
         notifyUser(context);
     }

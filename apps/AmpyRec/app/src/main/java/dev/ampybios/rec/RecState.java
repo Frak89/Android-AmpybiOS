@@ -212,9 +212,12 @@ public final class RecState {
                     .setRequiresStorageNotLow(true)
                     .setPersisted(true)
                     .build();
-            if (jobs.schedule(task)!=JobScheduler.RESULT_SUCCESS) return false;
-            if (!preferences.edit().putString("state","background").commit()) {
-                jobs.cancel(JOB_ID);
+            // Commit BEFORE scheduling: the system may launch the job promptly.
+            String previous=preferences.getString("state","staged");
+            if (!preferences.edit().putString("state","background").commit())
+                return false;
+            if (jobs.schedule(task)!=JobScheduler.RESULT_SUCCESS) {
+                preferences.edit().putString("state",previous).commit();
                 return false;
             }
             return true;
