@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -138,27 +139,7 @@ public final class RecState {
                     throw new IOException("Impossibile sostituire tema");
                 if (!tmp.renameTo(target)) throw new IOException("Commit tema fallito");
             }
-            // Never claim applied while AmpyCore is missing or signed differently.
-            PackageManager packageManager=context.getPackageManager();
-            if (packageManager.checkSignatures(context.getPackageName(),
-                    "dev.ampybios.core")!=PackageManager.SIGNATURE_MATCH)
-                throw new SecurityException("AmpyCore assente o firma differente");
-            ArrayList<String> ids=new ArrayList<>();
-            ArrayList<String> json=new ArrayList<>();
-            for (RecPackage.Theme theme:report.themes) {
-                ids.add(theme.id);
-                json.add(theme.content);
-            }
-            Bundle input=new Bundle();
-            input.putString("revision",report.zipSha256);
-            input.putStringArrayList("ids",ids);
-            input.putStringArrayList("json",json);
-            Bundle reply=context.getContentResolver().call(
-                    Uri.parse("content://"+THEME_AUTHORITY),"install-v1",null,input);
-            if (reply==null || !reply.getBoolean("applied",false) ||
-                    !report.zipSha256.equals(reply.getString("revision","")) ||
-                    reply.getInt("count",-1)!=ids.size())
-                throw new IOException("AmpyCore non ha confermato l'installazione");
+            deliverToCore(context,report);
             // Acknowledgement is received from AmpyCore; only NOW mark applied.
             if (!preferences.edit().putString("active",report.zipSha256)
                     .putString("state","applied")
@@ -168,6 +149,60 @@ public final class RecState {
             return "AmpyCore ha confermato l'installazione di "+ids.size()+
                     " temi (revisione "+report.zipSha256.substring(0,12)+")";
         }
+    }
+
+    /**
+     * Transient staging: zero filesystem writes by AmpyRec. Data lives only in
+     * bounded app heap until validation + synchronous AmpyCore acknowledgement.
+     * The receiver persists the selected active theme in ITS private app data.
+     * No deferred/reboot semantics are offered for a memory-only import.
+     */
+    public static String applyDirectFromRam(Context context, android.net.Uri selected)
+            throws Exception {
+        ByteArrayOutputStream memory = new ByteArrayOutputStream();
+        try (InputStream stream = context.getContentResolver().openInputStream(selected)) {
+            if (stream == null) throw new IOException("ZIP non disponibile");
+            byte[] chunk = new byte[8192];
+            int read;
+            while ((read = stream.read(chunk)) != -1) {
+                if (memory.size() + read > RamPackageScanner.MAX_ZIP_BYTES)
+                    throw new IOException("ZIP oltre 256 KiB: RAM-only non disponibile");
+                memory.write(chunk,0,read);
+            }
+        }
+        RecPackage.Report report = RamPackageScanner.inspect(memory.toByteArray());
+        if (report.kind != RecPackage.Kind.LIVE_THEME)
+            throw new IOException("Pacchetto non consentito per RAM LIVE");
+        deliverToCore(context,report);
+        return "Applicazione LIVE confermata da AmpyCore senza staging ZIP su disco ("
+                +report.zipSha256.substring(0,12)+")";
+    }
+
+    /** Shared single IPC transaction; never reports success without confirmation. */
+    private static void deliverToCore(Context context, RecPackage.Report report)
+            throws Exception {
+        // Never claim applied while AmpyCore is missing or signed differently.
+        PackageManager packageManager=context.getPackageManager();
+        if (packageManager.checkSignatures(context.getPackageName(),
+            "dev.ampybios.core")!=PackageManager.SIGNATURE_MATCH)
+            throw new SecurityException("AmpyCore assente o firma differente");
+        ArrayList<String> ids=new ArrayList<>();
+        ArrayList<String> json=new ArrayList<>();
+        for (RecPackage.Theme theme:report.themes) {
+            ids.add(theme.id);
+            json.add(theme.content);
+        }
+        Bundle input=new Bundle();
+        input.putString("revision",report.zipSha256);
+        input.putStringArrayList("ids",ids);
+        input.putStringArrayList("json",json);
+        Bundle reply=context.getContentResolver().call(
+            Uri.parse("content://"+THEME_AUTHORITY),"install-v1",null,input);
+        if (reply==null || !reply.getBoolean("applied",false) ||
+            !report.zipSha256.equals(reply.getString("revision","")) ||
+            reply.getInt("count",-1)!=ids.size())
+            throw new IOException("AmpyCore non ha confermato l'installazione");
+
     }
 
     public static void defer(Context context) {

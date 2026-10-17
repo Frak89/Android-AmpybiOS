@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
  */
 public final class RecActivity extends Activity {
     private static final int REQUEST_ZIP=301;
+    private static final int REQUEST_RAM_ZIP=303;
     private static final int REQUEST_NOTIFICATIONS=302;
     private static final int BG=Color.rgb(6,9,22);
     private static final int ACCENT=Color.rgb(24,225,238);
@@ -95,7 +96,9 @@ public final class RecActivity extends Activity {
         summary=text("Nessuna modifica in attesa",13,MUTED,false);
         body.addView(summary);
 
-        choose=button(body,"1 · Seleziona e analizza ZIP",view->pickZip());
+        choose=button(body,"Seleziona e analizza ZIP per staging persistente",view->pickZip(false));
+        button(body,"Applica LIVE direttamente da RAM · senza copia ZIP",
+                view->pickZip(true));
         now=button(body,"2 · Applica LIVE adesso",view->applyNow());
         later=button(body,"3 · Rimanda al prossimo riavvio",view->deferInstall());
         background=button(body,"4 · Applica LIVE in background",view->schedule());
@@ -127,29 +130,36 @@ public final class RecActivity extends Activity {
     }
     private void show(String value) { status.setText(value); }
 
-    private void pickZip() {
+    private void pickZip(boolean ramOnly) {
         Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_MIME_TYPES,
                 new String[]{"application/zip","application/octet-stream"});
-        startActivityForResult(intent,REQUEST_ZIP);
+        startActivityForResult(intent,ramOnly?REQUEST_RAM_ZIP:REQUEST_ZIP);
     }
 
     @Override protected void onActivityResult(int request,int result,Intent data) {
         super.onActivityResult(request,result,data);
-        if(request!=REQUEST_ZIP||result!=RESULT_OK||data==null||
+        if((request!=REQUEST_ZIP&&request!=REQUEST_RAM_ZIP)||
+                result!=RESULT_OK||data==null||
                 data.getData()==null) return;
         Uri uri=data.getData();
-        busy=true; refreshButtons(); show("Copio e verifico lo ZIP privato…");
+        final boolean memoryOnly=request==REQUEST_RAM_ZIP;
+        busy=true; refreshButtons(); show(memoryOnly
+                ?"Analisi e applicazione direttamente in RAM…"
+                :"Copio e verifico lo ZIP privato…");
         worker.execute(()->{
             String message;
             try {
-                RecPackage.Report report=RecState.stage(getApplicationContext(),uri);
-                message=report.description+"\nSHA-256: "+report.zipSha256+
-                        "\nDimensioni ZIP: "+report.archiveBytes+" byte";
-                if(report.kind!=RecPackage.Kind.LIVE_THEME) {
-                    message+="\nINSTALLAZIONE NON DISPONIBILE: solo analisi.";
+                if(memoryOnly) {
+                    message=RecState.applyDirectFromRam(getApplicationContext(),uri);
+                } else {
+                    RecPackage.Report report=RecState.stage(getApplicationContext(),uri);
+                    message=report.description+"\nSHA-256: "+report.zipSha256+
+                            "\nDimensioni ZIP: "+report.archiveBytes+" byte";
+                    if(report.kind!=RecPackage.Kind.LIVE_THEME)
+                        message+="\nINSTALLAZIONE NON DISPONIBILE: solo analisi.";
                 }
             } catch(Exception error) {
                 message="ZIP rifiutato: "+error.getMessage();
