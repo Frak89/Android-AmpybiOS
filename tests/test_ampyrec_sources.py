@@ -27,7 +27,8 @@ class AmpyRecContractTests(unittest.TestCase):
             self.assertIn(token, src)
         state = (APP / "java/dev/ampybios/rec/RecState.java").read_text()
         self.assertIn('"AmpyRec"', state)
-        self.assertIn('"releases"', state)
+        self.assertIn('deliverToCore(context,report)', state)
+        self.assertNotIn('File releases = new File(area(context)', state)
         self.assertIn('SKIN_PERMISSION', state)
         self.assertNotIn("Runtime.getRuntime().exec", state)
 

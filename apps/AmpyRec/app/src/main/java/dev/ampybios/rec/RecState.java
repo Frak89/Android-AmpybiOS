@@ -149,23 +149,8 @@ public final class RecState {
             if (report.kind != RecPackage.Kind.LIVE_THEME ||
                     !report.zipSha256.equals(preferences.getString("hash","")))
                 throw new IOException("Lo ZIP è cambiato dopo la verifica");
-            File releases = new File(area(context), "releases");
-            if (!releases.isDirectory() && !releases.mkdirs())
-                throw new IOException("Area release non accessibile");
-            File release = new File(releases, report.zipSha256);
-            if (!release.isDirectory() && !release.mkdirs())
-                throw new IOException("Impossibile preparare i temi");
-            for (RecPackage.Theme theme : report.themes) {
-                File target = new File(release, theme.id + ".json");
-                File tmp = new File(release, theme.id + ".partial");
-                try (FileOutputStream stream = new FileOutputStream(tmp)) {
-                    stream.write(theme.content.getBytes(StandardCharsets.UTF_8));
-                    stream.getFD().sync();
-                }
-                if (target.exists() && !target.delete())
-                    throw new IOException("Impossibile sostituire tema");
-                if (!tmp.renameTo(target)) throw new IOException("Commit tema fallito");
-            }
+            // AmpyCore is the single owner of installed theme data.
+            // AmpyRec must not duplicate uncompressed assets on disk.
             deliverToCore(context,report);
             // Acknowledgement is received from AmpyCore; only NOW mark applied.
             if (!preferences.edit().putString("active",report.zipSha256)
