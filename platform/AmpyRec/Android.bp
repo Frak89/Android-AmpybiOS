@@ -1,0 +1,10 @@
+// Optional unprivileged local ZIP inspector and LIVE theme staging app.
+// No platform UID, update_engine, root, recovery or block-device access.
+android_app {
+    name: "AmpyRec",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "current",
+    product_specific: true,
+}

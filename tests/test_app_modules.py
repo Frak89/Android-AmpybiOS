@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from scripts.validate_config import ROOT
 
-APPS = ("AmpyCore", "AmpyCam", "AmpyConnect", "AmpyLauncher")
+APPS = ("AmpyCore", "AmpyCam", "AmpyConnect", "AmpyLauncher", "AmpyRec")
 
 
 class AppModuleTests(unittest.TestCase):
@@ -19,11 +19,11 @@ class AppModuleTests(unittest.TestCase):
 
     def test_optional_modules_disabled_by_default(self):
         script = (ROOT / "scripts/integrate_grapheneos.sh").read_text()
-        for name in ("CAM", "RAW", "CONNECT", "LAUNCHER"):
+        for name in ("CAM", "RAW", "CONNECT", "LAUNCHER", "REC"):
             self.assertIn('AMPY_INCLUDE_' + name + '="${AMPY_INCLUDE_' + name + ':-0}"', script)
         product = (ROOT / "platform/ampybios/product.mk").read_text()
         self.assertIn("PRODUCT_PACKAGES += AmpyCore", product)
-        for app in ("AmpyCam", "AmpyRAW", "AmpyConnect", "AmpyLauncher"):
+        for app in ("AmpyCam", "AmpyRAW", "AmpyConnect", "AmpyLauncher", "AmpyRec"):
             self.assertNotIn("PRODUCT_PACKAGES += " + app, product)
 
     def test_original_ampyraw_is_imported_not_duplicated(self):

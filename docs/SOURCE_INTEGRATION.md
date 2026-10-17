@@ -55,3 +55,12 @@ use the official GrapheneOS updater for derivative builds.
 The privacy app list remains a specification, not bundled third-party APKs.
 No default root, unverified kernel swap, insecure permissions or OTA bypass
 is introduced. A device release still needs signed images and hardware tests.
+
+### AmpyRec (optional safe local update controller)
+
+`AMPY_INCLUDE_REC=1` stages the separate, **unprivileged** AmpyRec APK source
+for the product partition. The default remains 0. The app analyzes a chosen
+ZIP, applies only opt-in allowlisted LIVE themes, and offers reminders for
+later/next reboot or optional JobScheduler execution. A source ZIP and a
+system-update ZIP cannot be flashed or installed through this normal app.
+See [AmpyRec security contract](AMPYREC.md). No extra partition is created.

@@ -30,5 +30,5 @@ lunch cheetah-cur-user
 set -u
 
 m vendorbootimage vendorkernelbootimage target-files-package
-echo "AmpybiOS development target-files build finished (AmpyCore product addition only)."
+echo "AmpybiOS developer target-files compiled with selected AmpybiOS product apps."
 echo "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."

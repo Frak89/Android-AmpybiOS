@@ -22,6 +22,7 @@ checkout or a signed bootable firmware image.
 | **AmpyRAW Cyberdark** | **`Frak89/AmpyRAW-Cyberdark`** | Canonical existing editor with native LibRaw source; original signing identity preserved |
 | AmpyConnect | `apps/AmpyConnect` | HTTPS-only Home Assistant read-only source; APK unverified |
 | AmpyLauncher | `apps/AmpyLauncher` | HOME candidate source; APK/device tests unverified |
+| **AmpyRec** | `apps/AmpyRec` | ZIP scanner, LIVE theme staging, reboot reminders, JobScheduler source; APK compilation unverified |
 | AmpyBoot | `overlays/cheetah/…/boot_logo_package` | Source generator, PNG packager and validation |
 | AmpyOTA | `config/ampyota-dev.json` | Only a configuration, no signed update server |
 | SystemUI/AmpySkin system-level | Planned | No system-wide framework patches yet |
@@ -46,3 +47,16 @@ package ID, APK SHA-256 and Android signer certificate SHA-256 before staging.
   decoder correctness. Retain originals and backups.
 
 See [AmpyRAW integration](AMPYRAW.md) and [GrapheneOS source integration](SOURCE_INTEGRATION.md).
+
+## AmpyRec staging milestone
+
+A standard nonprivileged APK project has been added. User-selected ZIPs are
+scanned with resource limits and path/hash checks; only allowlisted LIVE JSON
+themes can be applied. Repeated reboots preserve user-deferred work and a
+notification can remind the user; queued background work uses Android's own
+JobScheduler. System OTA ZIPs and raw source archives are never installed.
+The storage location `files/AmpyRec` is NOT a physical partition.
+
+As observed on 2026-10-17, the AmpyRec GitHub Actions build fails without a
+runner or compiler step (`runner_name=null`, `steps=[]`). **No debug APK or
+tested ROM has yet been generated.** See [AmpyRec](AMPYREC.md).

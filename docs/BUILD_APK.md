@@ -2,12 +2,13 @@
 
 ## AmpybiOS in-tree apps (source stage)
 
-Open any of the following **four** independent projects in Android Studio:
+Open any of the following **five** independent projects in Android Studio:
 
 - `apps/AmpyCore`
 - `apps/AmpyCam`
 - `apps/AmpyConnect`
 - `apps/AmpyLauncher`
+- `apps/AmpyRec` — ZIP inspection and LIVE theme staging (not ROM flashing)
 
 Their projects target Android SDK API 37, Android Gradle Plugin 9.2.0,
 Gradle 9.4.1, JDK 17+. The repository currently has no complete Gradle
@@ -20,6 +21,7 @@ bash scripts/build_ampycore_local.sh build
 bash scripts/build_ampycam_local.sh build
 bash scripts/build_ampyconnect_local.sh build
 bash scripts/build_ampylauncher_local.sh build
+bash scripts/build_ampyrec_local.sh build
 ```
 
 ## AmpyRAW is a DIFFERENT existing Android Studio project
