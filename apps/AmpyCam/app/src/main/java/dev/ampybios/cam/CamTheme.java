@@ -5,6 +5,7 @@ import android.graphics.Color;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -29,8 +30,18 @@ final class CamTheme {
     static CamTheme load(Context context, String id) {
         if (!id.matches("[a-z-]{1,32}")) id = "fusion";
         try (InputStream stream = context.getAssets().open(id + ".json")) {
+            // InputStream.readAllBytes() is not available on every minSdk 29 device.
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            byte[] chunk = new byte[4096];
+            int count;
+            while ((count = stream.read(chunk)) != -1) {
+                bytes.write(chunk, 0, count);
+                if (bytes.size() > 64 * 1024) {
+                    throw new IllegalArgumentException("Theme exceeds size limit");
+                }
+            }
             JSONObject data = new JSONObject(new String(
-                    stream.readAllBytes(), StandardCharsets.UTF_8));
+                    bytes.toByteArray(), StandardCharsets.UTF_8));
             if (data.getInt("schema") != 1 || !id.equals(data.getString("id"))) {
                 throw new IllegalArgumentException("Unsupported or mismatched theme");
             }
