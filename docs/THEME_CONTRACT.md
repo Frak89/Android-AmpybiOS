@@ -1,33 +1,32 @@
-# Skin contract
+# AmpybiOS skin synchronization contract
 
-AmpyCore and AmpyCam now consume the **same** theme files from
-`config/themes/{fusion,cyberpunk,futuristic,minimal}.json`. This means the
-palette and per-corner radii are identical across both apps.
+AmpyCore is the local source of four skin identifiers: `fusion`,
+`cyberpunk`, `futuristic`, `minimal`. The in-tree Cam/Connect/Launcher
+prototypes each reuse the same JSON color/corner profiles; each app has a
+local override.
 
-The prototypes save each app's choice locally because Android isolates app
-storage. They **do not** have permission to read each other's private
-preferences or to modify arbitrary third-party apps. A future AmpyCore ROM
-service can implement global theme updates with signature-level permissions,
-a sanitized schema, and explicit opt-in for each app.
+AmpyCore sends explicit `dev.ampybios.action.SKIN_CHANGED` broadcasts to
+participating package IDs, with `dev.ampybios.permission.SKIN_SYNC`
+at **signature** protection level. Receivers also require that permission,
+and validate incoming skin IDs. Only apps signed with the same certificate
+as the AmpyCore permission owner can receive them.
 
-## Prototype app-to-app synchronization
+## Canonical AmpyRAW editor
 
-AmpyCore now emits `dev.ampybios.action.SKIN_CHANGED` explicitly to
-`dev.ampybios.cam` using a **signature-level permission**
-`dev.ampybios.permission.SKIN_SYNC`. AmpyCam receives the theme only if it
-opts to `Segui tema AmpyCore` and validates the incoming ID against the
-four locally bundled profiles. Manual theme selection in AmpyCam disables
-automatic following until re-enabled.
+The actual editor is `it.ampy.ampyraw` from
+`Frak89/AmpyRAW-Cyberdark`, **not** `dev.ampybios.raw`.
+AmpyRAW supports an opt-in, permission-protected bridge:
+- Fusion / Cyberpunk → existing AmpyRAW Cyberpunk theme.
+- Futuristic → existing AmpyRAW Futuristic theme.
+- Minimal → existing AmpyRAW Modern theme.
+- AmpyRAW's Vista/Retro themes remain locally selectable.
+- Following AmpyCore starts disabled, and manual theme choices disable it.
 
-**Both apps must be signed by the same Android signing certificate** to use
-this path; Android Studio debug keys from different computers usually differ.
-A signature mismatch fails closed without granting external apps access.
-This is a local IPC prototype, **not global Android/SystemUI skinning**.
+The original editor keeps its own signing identity for APK updates.
+If it is **not signed by the same cert as AmpyCore**, Android refuses
+cross-app skin sync. **Never weaken signature checking or silently
+re-sign an installed AmpyRAW APK** just to get shared visuals; you can
+still choose a theme manually.
 
-`AmpyConnect` now uses the same signing-protected broadcast and the same four
-JSON skins. Its Home Assistant bearer token is strictly ephemeral and is never
-included in theme messages.
-
-`AmpyLauncher` uses the same signature-protected theme broadcast and local
-per-app override. All installed AmpybiOS apps must use the same signing
-certificate for this optional IPC; a mismatched certificate fails closed.
+These broadcasts are an **optional app-level feature**, NOT global
+SystemUI skinning. They do not change RAW color development or export.

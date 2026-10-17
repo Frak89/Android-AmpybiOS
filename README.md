@@ -12,7 +12,7 @@
 - AmpyLauncher, AmpyRadar window borders, animated rotations and transitions.
 - AmpyBoot: numbered boot-animation frames (0.png, 1.png, 2.png, …); **not** a change to the proprietary Pixel bootloader splash.
 - AmpyOTA: custom signed OTA channel `dev`, Wi-Fi-only automatic download, persistent theme profiles, reboot on confirmation.
-- AmpyCam (RAW DNG capture), AmpyRaw (CR3/DNG photo processing), AmpyConnect (smart devices/industrial protocols).
+- AmpyCam (RAW DNG capture), **AmpyRAW Cyberdark** (original existing photo editor), AmpyConnect (smart devices/industrial protocols).
 - Privacy-first optional integration of Proton Mail/Calendar/VPN/Drive, Signal, Bitwarden, Aegis, Organic Maps, VLC and Accrescent; no Google apps preinstalled.
 
 ## Repository layout
@@ -85,8 +85,8 @@ runner allocation. You do not need root or a flashed ROM to test AmpyCore.
 - **[AmpyCam](apps/AmpyCam/README.md)**: standalone Camera2 live preview and
   RAW_SENSOR DNG capture to local scoped storage. Source stage, not device-tested.
 - **[AmpySkin JSON contract](docs/THEME_CONTRACT.md)**: shared palettes and corner
-  presets across both apps. Per-app settings for now; global synchronization
-  is not implemented.
+  presets across the new in-tree apps, plus optional signed theme mapping to
+  the original AmpyRAW editor. This is not global SystemUI skinning.
 - **[AmpyBoot Organic Generator](overlays/cheetah/vendor/ampybi/boot_logo_package/README.md)**:
   reproducible vector frames, optional PNG rendering and integrity-checked ZIP.
 - **[Current audit/status](docs/STATUS.md)**: implemented, planned and blockers.
@@ -94,22 +94,25 @@ runner allocation. You do not need root or a flashed ROM to test AmpyCore.
 Android Studio: open `apps/AmpyCore` or `apps/AmpyCam` independently.
 Neither project is a flashable firmware image. See [APK build notes](docs/BUILD_APK.md).
 
-## Experimental Android app modules
+## Canonical AmpyRAW editor
 
-- [AmpyRaw](apps/AmpyRaw/README.md): non-destructive Android-native editing
-  of JPEG/PNG/WebP/HEIF (when decoded by the OS), export a separate JPEG copy.
-  Canon CR3/DNG **decoder not yet available**.
-- [AmpyCam](apps/AmpyCam/README.md): Camera2 RAW_SENSOR DNG capture prototype.
-- [AmpyCore](apps/AmpyCore/README.md): theme and performance profiles.
+The RAW editor is the **existing** [Frak89/AmpyRAW-Cyberdark](https://github.com/Frak89/AmpyRAW-Cyberdark)
+project (Android package `it.ampy.ampyraw`). The duplicate minimal
+`apps/AmpyRaw` prototype has been removed, along with its obsolete CI.
+AmpyRAW has native LibRaw/CR3 source code, optical tools, presets, TIFF/JPEG
+exports and its **own independent OTA signing identity**.
 
-All three are separate Android Studio projects and are **not confirmed
-compiled**. Opt into packaging Cam/Raw in an AOSP development ROM with
-`AMPY_INCLUDE_CAM=1 AMPY_INCLUDE_RAW=1` (disabled by default); see
-[Android source integration](docs/SOURCE_INTEGRATION.md).
+Use [AmpyRAW integration and signing instructions](docs/AMPYRAW.md)
+to build the original app in Android Studio or stage a **verified presigned**
+APK in a ROM (explicit `AMPY_INCLUDE_RAW=1`; disabled by default).
+The original editor requires **Gradle 8.13 / AGP 8.13.2 / NDK 27.2**.
+AmpyCore/Cam/Connect/Launcher are independent, unverified API 37 projects.
+No Android APK or signed ROM has been produced in this run.
 
-- [AmpyConnect](apps/AmpyConnect/README.md): standalone HTTPS-only, read-only
-  Home Assistant state viewer. No background polling or actuator commands.
-  Opt in during developer ROM staging with `AMPY_INCLUDE_CONNECT=1`.
+- [AmpyConnect](apps/AmpyConnect/README.md): HTTPS-only read-only Home Assistant viewer.
+- [AmpyLauncher](apps/AmpyLauncher/README.md): independent Android HOME candidate.
+- [AmpyCore](apps/AmpyCore/README.md): theme/performance studio.
+- [AmpyCam](apps/AmpyCam/README.md): separate Camera2 DNG capture prototype.
 
 ## ROM developer build (Linux x86_64)
 

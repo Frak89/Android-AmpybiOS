@@ -1,70 +1,54 @@
-# Build AmpyCore as a standalone Android APK
+# Android Studio — AmpybiOS app builds
 
-**Current target:** debug-only, app package `dev.ampybios.core`, no root privileges, no changes to other apps or Android SystemUI. This is **not** a bootable AmpybiOS operating system.
+## AmpybiOS in-tree apps (source stage)
 
-## Windows / Android Studio
-
-1. Install Android Studio, JDK 17+, **Android SDK Platform API 37** and Build Tools from SDK Manager.
-2. Download/clone this repository. Open the folder `apps/AmpyCore` in Android Studio, not the entire GrapheneOS source tree.
-3. This experimental project currently has **no checked-in Gradle wrapper binary**. Set a local **Gradle 9.4.1** distribution in Android Studio's Gradle settings, or install Gradle 9.4.1 and build from its terminal. Do **not** run a `gradlew` command until a complete, audited Gradle wrapper is added.
-4. Run Gradle Sync, then choose **Build → Build APK(s)**. The debug APK will appear at `apps/AmpyCore/app/build/outputs/apk/debug/app-debug.apk`. Install it on the Pixel only after the build succeeds.
-5. **No bootloader unlocking required** to test this normal application.
-
-Use a terminal (PowerShell example, provided local Gradle is available):
-```powershell
-cd apps/AmpyCore
-gradle :app:assembleDebug --stacktrace --no-daemon
-```
-
-## Linux
-
-Prerequisites: working Internet during initial dependency install, JDK 17+, Android SDK Platform 37, Gradle 9.4.1.
-
-```bash
-export ANDROID_HOME="$HOME/Android/Sdk"  # use your actual SDK directory
-bash scripts/build_ampycore_local.sh --doctor
-bash scripts/build_ampycore_local.sh build
-```
-
-The dependency versions AGP 9.2.0 / Gradle 9.4.1 / JDK 17 / API 37 are documented at https://developer.android.com/build/releases/agp-9-2-0-release-notes.
-
-## Why the GitHub Actions check fails before building
-
-As observed on 2026-10-16, workflow jobs display `steps: []`, `runner_id: 0`, and finish in a few seconds. **No compiler step was executed**. Do not confuse this with an Android compile error.
-
-Open **Actions** → the failed workflow → job annotations. Then inspect:
-- **Settings → Actions → General** to ensure actions and runners are allowed.
-- Account/org **Settings → Billing & licensing**, Actions quota / spending limits and billing configuration (only if prompted).
-- Access to GitHub-hosted runners for this private repository.
-
-We cannot determine the precise cause from the API response alone. The project must still be compiled and run on actual Android hardware after an available runner or local environment is configured.
-
-## Smoke-test checklist
-
-- Start AmpyCore and cycle through Fusion, Cyberpunk, Futuristic, Minimal.
-- Test four independent corners, glow, radar speed and reduced motion; restart and verify settings persist.
-- Toggle Eco / Balanced / Fusion Extreme; check that the preview caps and thermal fallback are reflected in UI.
-- Rotate the Pixel; background/foreground the app; verify drawing resumes, without a runaway render loop.
-- Verify no app requests root or accesses the network.
-- Check UI with Android large text and screen magnification.
-
-## All independent Android Studio projects (source stage)
+Open any of the following **four** independent projects in Android Studio:
 
 - `apps/AmpyCore`
 - `apps/AmpyCam`
-- `apps/AmpyRaw`
 - `apps/AmpyConnect`
 - `apps/AmpyLauncher`
 
-Open **one app's directory** in Android Studio and use `Build → Build APK(s)`.
-The five projects are Gradle 9.4.1 / AGP 9.2 / Android SDK API 37 projects.
-They are not yet confirmed to compile with installed Android SDK 37.
+Their projects target Android SDK API 37, Android Gradle Plugin 9.2.0,
+Gradle 9.4.1, JDK 17+. The repository currently has no complete Gradle
+wrapper in these app directories. Debug APKs have **not** been confirmed
+compiled because the configured private Actions jobs failed to start.
 
-For Linux build preflight, from repo root:
 ```bash
-ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampycore_local.sh --doctor
-ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampycam_local.sh build
-ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampyraw_local.sh build
-ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampyconnect_local.sh build
-ANDROID_HOME="$HOME/Android/Sdk" bash scripts/build_ampylauncher_local.sh build
+export ANDROID_HOME="$HOME/Android/Sdk"
+bash scripts/build_ampycore_local.sh build
+bash scripts/build_ampycam_local.sh build
+bash scripts/build_ampyconnect_local.sh build
+bash scripts/build_ampylauncher_local.sh build
 ```
+
+## AmpyRAW is a DIFFERENT existing Android Studio project
+
+Use the **original** [AmpyRAW Cyberdark repository](https://github.com/Frak89/AmpyRAW-Cyberdark)
+instead of the removed `apps/AmpyRaw` prototype.
+It uses SDK 36, AGP 8.13.2, Gradle 8.13, NDK 27.2 and LibRaw 0.22.2.
+
+```bash
+bash scripts/prepare_ampyraw_source.sh "$HOME/src/AmpyRAW-Cyberdark"
+# Fetch the required LibRaw library per the original project's build workflow:
+git clone --depth 1 --branch 0.22.2 https://github.com/LibRaw/LibRaw.git \
+  "$HOME/src/AmpyRAW-Cyberdark/vendor/LibRaw"
+# Open $HOME/src/AmpyRAW-Cyberdark in Android Studio.
+# Or use Gradle 8.13:
+bash scripts/build_ampyraw_local.sh "$HOME/src/AmpyRAW-Cyberdark"
+```
+
+**Signing matters:** changing AmpyRAW signing keys would block updates over
+the existing installed APK and may require uninstalling, losing private data.
+Do not use unsigned or differently signed test APKs as OTA releases.
+
+To bundle AmpyRAW as a presigned AOSP product app, follow
+[the SHA-256 + signer checks](AMPYRAW.md); no APK is bundled by default.
+
+## CI and ROM constraints
+
+Previous GitHub Actions jobs failed with no runner assignment, so no Android
+compiler outputs have been verified. Check Actions permissions/runner
+availability or compile with local Android Studio. A signed flashable
+AmpybiOS ROM additionally requires a full GrapheneOS Linux build environment,
+vendor files, custom verified-boot signing, OTA and Pixel 7 Pro smoke tests.

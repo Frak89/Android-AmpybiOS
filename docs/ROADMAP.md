@@ -35,9 +35,11 @@
 - [x] AmpyCam source prototype: Camera2 RAW_SENSOR preview and DNG MediaStore write
 - [ ] AmpyCam Android APK compilation and Pixel camera/rotation/storage smoke tests
 - [ ] AmpyCam full manual controls, bracketing, RAW+JPEG and multi-frame pipeline
-- [x] AmpyRaw native photo-editor prototype: JPEG/PNG/WebP color adjustments and separate JPEG export
-- [ ] AmpyRaw full-resolution non-destructive adjustment sidecars and image pipeline
-- [ ] AmpyRaw safe LibRaw-based DNG/CR3 decoding (Canon EOS R6 Mark II samples)
+- [x] Use existing Frak89/AmpyRAW-Cyberdark instead of duplicate minimal editor
+- [x] Pin canonical editor source, optional signer-verified presigned APK module
+- [x] Add opt-in theme receiver to original AmpyRAW source
+- [ ] Compile and test original native LibRaw/CR3 editor on Pixel 7 Pro with EOS R6 Mark II files
+- [ ] Validate original signing fingerprint before packaging ROM/OTA
 - [x] Shared four-theme JSON palette/corner contract in AmpyCore and AmpyCam
 - [ ] Cross-app theme event service via safe ROM framework API
 - [x] AmpyConnect read-only HTTPS Home Assistant entity viewer (source only)
