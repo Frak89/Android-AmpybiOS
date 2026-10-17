@@ -4,6 +4,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -163,7 +164,7 @@ public final class RecState {
             } else {
                 staged(context).delete();
             }
-            return "AmpyCore ha confermato l'installazione di "+ids.size()+
+            return "AmpyCore ha confermato l'installazione di "+report.themes.size()+
                     " temi (revisione "+report.zipSha256.substring(0,12)+")";
         }
     }
