@@ -16,7 +16,7 @@ GiB = 1024 ** 3
 
 
 def inspect(source: Path, *, minimum_gib: int = 220,
-            minimum_memory_gib: int = 32) -> dict:
+            minimum_memory_gib: int = 32, allow_constrained: bool = False) -> dict:
     source = source.expanduser().resolve()
     ancestor = source
     while not ancestor.exists():
@@ -41,27 +41,35 @@ def inspect(source: Path, *, minimum_gib: int = 220,
         warnings.append("GrapheneOS build requires Linux")
     if cpu_arch not in {"x86_64", "amd64"}:
         warnings.append("GrapheneOS build requires x86_64")
+    required_warnings = list(warnings)
     if usage.free < minimum_gib * GiB:
         warnings.append(f"Insufficient free storage: {available_gib} GiB "
                         f"(recommended >= {minimum_gib} GiB)")
     if memory_bytes is None or memory_bytes < minimum_memory_gib * GiB:
         warnings.append(f"Insufficient RAM: {total_mem} GiB "
                         f"(required >= {minimum_memory_gib} GiB)")
+    resource_warnings = warnings[len(required_warnings):]
     if not all(located.values()):
-        warnings.append("Missing executables: " + ", ".join(
-            name for name, ok in located.items() if not ok))
+        missing = "Missing executables: " + ", ".join(
+            name for name, ok in located.items() if not ok)
+        warnings.append(missing)
+        required_warnings.append(missing)
     return {"source_dir": str(source), "mount_checked": str(ancestor),
             "architecture": cpu_arch, "free_storage_gib": available_gib,
             "memory_gib": total_mem, "tools": located, "warnings": warnings,
-            "ready": len(warnings) == 0}
+            "resource_warnings": resource_warnings,
+            "resource_override": allow_constrained,
+            "ready": not (required_warnings if allow_constrained else warnings)}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path, help="Destination for GrapheneOS checkout")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--allow-constrained", action="store_true",
+                        help="Attempt with less RAM/disk; tools and Linux/x86_64 remain mandatory")
     args = parser.parse_args()
-    result = inspect(args.source)
+    result = inspect(args.source, allow_constrained=args.allow_constrained)
     if args.json:
         print(json.dumps(result, indent=2))
     else:

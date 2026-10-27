@@ -25,7 +25,13 @@ elif [[ $# -eq 2 ]]; then echo "Unknown option: $2" >&2; exit 2; fi
 : "${AMPY_SANDBOX_PREBUILT_APK:?Set the release APK built from Frak89/AmpybiOS}"
 : "${AMPY_SANDBOX_EXPECTED_APK_SHA256:?Set its approved APK SHA256}"
 : "${AMPY_SANDBOX_EXPECTED_SIGNER_SHA256:?Set its approved signer certificate SHA256}"
-python3 "$ROOT/scripts/check_build_host.py" "$TREE"
+host_options=()
+case "${AMPY_ALLOW_CONSTRAINED_HOST:-0}" in
+  0) ;;
+  1) host_options+=(--allow-constrained) ;;
+  *) echo "AMPY_ALLOW_CONSTRAINED_HOST must be 0 or 1" >&2; exit 2 ;;
+esac
+python3 "$ROOT/scripts/check_build_host.py" "$TREE" "${host_options[@]}"
 python3 "$ROOT/scripts/verify_ampysandbox_prebuilt.py" --apk "$AMPY_SANDBOX_PREBUILT_APK" \
   --sha256 "$AMPY_SANDBOX_EXPECTED_APK_SHA256" --signer-sha256 "$AMPY_SANDBOX_EXPECTED_SIGNER_SHA256"
 export BUILD_NUMBER="$AMPY_BUILD_NUMBER"

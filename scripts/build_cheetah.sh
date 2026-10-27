@@ -29,10 +29,17 @@ source build/envsetup.sh
 lunch cheetah-cur-user
 set -u
 
+jobs_options=()
+if [[ -n "${AMPY_BUILD_JOBS:-}" ]]; then
+  [[ "$AMPY_BUILD_JOBS" =~ ^[1-9][0-9]{0,2}$ ]] && (( AMPY_BUILD_JOBS <= 256 )) || {
+    echo "AMPY_BUILD_JOBS must be an integer between 1 and 256" >&2; exit 2;
+  }
+  jobs_options=("-j$AMPY_BUILD_JOBS")
+fi
 if [[ "${AMPY_BUILD_OTATOOLS:-0}" == 1 ]]; then
-  m vendorbootimage vendorkernelbootimage target-files-package otatools-package
+  m "${jobs_options[@]}" vendorbootimage vendorkernelbootimage target-files-package otatools-package
 else
-  m vendorbootimage vendorkernelbootimage target-files-package
+  m "${jobs_options[@]}" vendorbootimage vendorkernelbootimage target-files-package
 fi
 echo "AmpybiOS developer target-files compiled with selected AmpybiOS product apps."
 echo "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."

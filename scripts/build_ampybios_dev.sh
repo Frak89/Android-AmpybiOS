@@ -34,7 +34,13 @@ EOF
   exit 0
 fi
 
-python3 "$SCRIPT_DIR/check_build_host.py" "$DEST"
+host_options=()
+case "${AMPY_ALLOW_CONSTRAINED_HOST:-0}" in
+  0) ;;
+  1) host_options+=(--allow-constrained) ;;
+  *) echo "AMPY_ALLOW_CONSTRAINED_HOST must be 0 or 1" >&2; exit 2 ;;
+esac
+python3 "$SCRIPT_DIR/check_build_host.py" "$DEST" "${host_options[@]}"
 # The Android source tree is intentionally kept separate from AmpybiOS Git.
 bash "$SCRIPT_DIR/prepare_source.sh" "$DEST"
 if ! command -v yarn >/dev/null; then
