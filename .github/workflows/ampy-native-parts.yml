@@ -1,0 +1,52 @@
+name: AmpyBuild native parallel packages
+on:
+  push:
+    branches: [ampy/build-combined-parts]
+    paths: ['.github/workflows/ampy-native-parts.yml', 'apps/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ampy-native-parts-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native-apps:
+    name: AmpyNative-${{ matrix.app }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        app: [AmpyCore, AmpyCam, AmpyConnect, AmpyLauncher, AmpyRec]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.4.1'
+      - run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0'
+      - name: Compile unsigned release APK
+        env:
+          AMPY_APP: ${{ matrix.app }}
+        run: |
+          set -euo pipefail
+          gradle -p "apps/$AMPY_APP" --no-daemon --max-workers=2 --stacktrace :app:assembleRelease
+          mkdir -p "packages/$AMPY_APP"
+          cp "apps/$AMPY_APP/app/build/outputs/apk/release/app-release-unsigned.apk" "packages/$AMPY_APP/$AMPY_APP-unsigned.apk"
+          sha256sum "packages/$AMPY_APP/$AMPY_APP-unsigned.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AmpyNative-${{ matrix.app }}-unsigned
+          path: packages/
+          if-no-files-found: error
+          retention-days: 7
+
