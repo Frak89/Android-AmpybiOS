@@ -1,6 +1,7 @@
 """Original AmpyRAW source provenance checks (no local shadow editor)."""
 from pathlib import Path
 import json
+import re
 import unittest
 from scripts.validate_config import ROOT
 
@@ -20,7 +21,7 @@ class AmpyRawIntegrationTests(unittest.TestCase):
             self.assertIn(token, validate)
         soong = (ROOT / "platform/AmpyRAW/Android.bp").read_text()
         self.assertIn("presigned: true", soong)
-        self.assertNotIn('certificate: "platform"', soong)
+        self.assertNotRegex(re.sub(r'//[^\n]*', '', soong), r'\bcertificate\s*:\s*"platform"')
 
 if __name__ == "__main__":
     unittest.main()

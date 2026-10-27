@@ -1,0 +1,12 @@
+// The Python/C++ environment from Frak89/AmpybiOS is built independently.
+// Keep the existing Android package and the owner's approved APK signer.
+android_app_import {
+    name: "AmpySandbox",
+    apk: "AmpybiOS.apk",
+    presigned: true,
+    preprocessed: true,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+}

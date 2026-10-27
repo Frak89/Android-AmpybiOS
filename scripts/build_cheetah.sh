@@ -29,6 +29,10 @@ source build/envsetup.sh
 lunch cheetah-cur-user
 set -u
 
-m vendorbootimage vendorkernelbootimage target-files-package
+if [[ "${AMPY_BUILD_OTATOOLS:-0}" == 1 ]]; then
+  m vendorbootimage vendorkernelbootimage target-files-package otatools-package
+else
+  m vendorbootimage vendorkernelbootimage target-files-package
+fi
 echo "AmpybiOS developer target-files compiled with selected AmpybiOS product apps."
 echo "This is NOT a signed flashable ROM. SystemUI/OTA/root integration remains pending."

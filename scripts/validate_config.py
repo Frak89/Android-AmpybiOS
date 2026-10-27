@@ -21,6 +21,13 @@ def validate(root: Path = ROOT) -> None:
     assert build["device"]["codename"] == "cheetah"
     assert build["android_major"] == 17
     assert build["security"]["default_root"] is False
+    sandbox = load("config/ampysandbox-upstream.json")
+    assert sandbox["repository"] == "Frak89/AmpybiOS"
+    assert sandbox["package_name"] == "io.ampy.bios" and sandbox["module"] == "AmpySandbox"
+    assert re.fullmatch(r"[0-9a-f]{40}", sandbox["source_sha"])
+    assert re.fullmatch(r"[0-9a-f]{40}", sandbox["source_tree_sha"])
+    assert sandbox["sdk"] == 37 and sandbox["required_abi"] == "arm64-v8a"
+    assert sandbox["enabled_by_default"] is False
     ota = load("config/ampyota-dev.json")
     assert ota["channel"] == "dev" and ota["device"] == "cheetah"
     assert ota["automatic_check"] and ota["automatic_download"] and ota["automatic_install"]

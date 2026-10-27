@@ -62,7 +62,10 @@ class AmpyRecContractTests(unittest.TestCase):
         self.assertIn("ZipInputStream",scanner)
         self.assertIn("MAX_ZIP_BYTES = 256 * 1024",scanner)
         self.assertIn("applyDirectFromRam",state)
-        self.assertIn("RamPackageScanner.inspect(memory.toByteArray())",state)
+        self.assertIn("RamPackageScanner.inspect(readRamBytes(context,selected))",state)
+        ram=state.split("private static byte[] readRamBytes",1)[1].split("/**",1)[0]
+        self.assertIn("RamPackageScanner.MAX_ZIP_BYTES",ram)
+        self.assertNotIn("FileOutputStream",ram)
         self.assertIn("deliverToCore(context,report)",state)
         self.assertTrue((APP.parent / "test/java/dev/ampybios/rec/RamPackageScannerTest.java").is_file())
 

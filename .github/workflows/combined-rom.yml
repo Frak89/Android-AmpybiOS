@@ -1,0 +1,57 @@
+name: AmpybiOS combined cheetah target-files
+
+# Requires an owner's dedicated Linux build machine. Never runs on a PR.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_build:
+        description: 'Build unsigned target-files on my dedicated cheetah build host (not flashable)'
+        required: true
+        type: boolean
+        default: false
+      source_tree:
+        description: 'Absolute source-tree path on the self-hosted runner'
+        required: true
+        type: string
+      build_number:
+        description: 'Unique numeric build number, e.g. YYYYMMDD00'
+        required: true
+        type: string
+      sandbox_apk:
+        description: 'Absolute approved signed io.ampy.bios release APK path on the runner'
+        required: true
+        type: string
+      sandbox_sha256:
+        description: 'APK SHA256 from AmpySandbox.lock.json'
+        required: true
+        type: string
+      sandbox_signer_sha256:
+        description: 'Approved APK signer SHA256'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: ampybios-combined-rom
+  cancel-in-progress: false
+jobs:
+  target-files:
+    if: ${{ inputs.confirm_build == true }}
+    runs-on: [self-hosted, linux, x64, ampybios-rom]
+    timeout-minutes: 720
+    env:
+      AMPY_TREE: ${{ inputs.source_tree }}
+      AMPY_BUILD_NUMBER: ${{ inputs.build_number }}
+      AMPY_SANDBOX_PREBUILT_APK: ${{ inputs.sandbox_apk }}
+      AMPY_SANDBOX_EXPECTED_APK_SHA256: ${{ inputs.sandbox_sha256 }}
+      AMPY_SANDBOX_EXPECTED_SIGNER_SHA256: ${{ inputs.sandbox_signer_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate host and approved app, sync and compile
+        run: bash scripts/build_combined_cheetah.sh "$AMPY_TREE"
+      - name: Local artifact location
+        run: |
+          echo "Unsigned target-files remain on this owner's build host."
+          echo "Use sign_combined_release.sh locally with the owner's persistent keys."
+          echo "No private app, target-files or signing material is uploaded to public Actions artifacts."

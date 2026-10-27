@@ -107,3 +107,13 @@ the execution of uncompiled GrapheneOS sources. The boot receiver can show a
 user-visible notification; it does not auto-launch an Activity or flash images.
 AmpyRec dev version is 0.2.0-dev. **Neither AmpyRec nor AmpyLauncher APK is
 compiled and validated in this environment.**
+
+## 2026-10-27: integrazione delle due repository per cheetah
+
+Aggiunti AmpySandbox (app prefirmata io.ampy.bios), controllo di hash/firma/package/ABI, sorgente app vincolato al commit/albero Git, snapshot sorgenti verificabile, build target-files combinata e wrapper di firma upstream con audit del factory ZIP e dell'APK nei target-files firmati. Aggiunta workflow manuale per runner del proprietario; nessun artifact contenente l'app privata viene caricato automaticamente nella repository pubblica.
+
+Corrette tre asserzioni host non aggiornate: nome Kconfig senza prefisso CONFIG_, commenti Soong nella ricerca del certificato e helper corrente di import RAM. La logica kernel/RAW/Rec non è stata indebolita.
+
+Eseguiti 69 test host della repository pubblica, 45 test Python dell'app privata, cinque test Organic SVG Engine, controlli di geometria C++ e 19 controlli PerformancePolicy Java. Nei test APK gli strumenti SDK sono simulati; il controllo firma factory usa OpenSSH reale con chiavi temporanee su ZIP sintetici. Nessun APK/firmware è stato compilato qui. Host attuale: circa 29.8 GiB liberi e 9.7 GiB RAM; manca la capacità per il checkout/build completo.
+
+La guida COMBINED_PIXEL7PRO_IT.md e l'elenco FUNZIONI_INTEGRATE_IT.md distinguono implementazione sorgenti, generazione futura della ROM e funzionalità ancora mancanti.

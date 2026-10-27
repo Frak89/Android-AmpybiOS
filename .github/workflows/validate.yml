@@ -23,4 +23,5 @@ jobs:
       - name: Performance policy tests (JDK)
         run: bash scripts/test_performance_policy.sh
       - name: Shell syntax
-        run: bash -n scripts/*.sh
+        run: |
+          for script in scripts/*.sh; do bash -n "$script"; done

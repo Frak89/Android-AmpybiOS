@@ -81,8 +81,10 @@ class PatchTests(unittest.TestCase):
         p = ROOT / self.cfg["patches"][0]["file"]
         git(self.src, "apply", "--check", str(p))
         git(self.src, "apply", str(p))
-        self.assertIn("CONFIG_AMPYKERNEL_SUGOV_ECO_DEFAULT",
+        self.assertIn("config AMPYKERNEL_SUGOV_ECO_DEFAULT",
                       (self.src / "drivers/cpufreq/Kconfig").read_text())
+        self.assertIn("CONFIG_AMPYKERNEL_SUGOV_ECO_DEFAULT",
+                      (self.src / "kernel/sched/cpufreq_schedutil.c").read_text())
         git(self.src, "apply", "--reverse", "--check", str(p))
         git(self.src, "apply", "--reverse", str(p))
         self.assertEqual(git(self.src, "status", "--porcelain"), "")

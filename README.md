@@ -149,3 +149,11 @@ Unsigned firmware/system ZIPs and source archives are never installed by it.
 
 Production status: source staged, APK compilation and hardware validation
 blocked by GitHub Actions runner allocation. See the [release gates](apps/AmpyRec/README.md).
+
+## Integrazione con l'app AmpybiOS — Pixel 7 Pro
+
+[Guida italiana alle due repository e alla build combinata](docs/COMBINED_PIXEL7PRO_IT.md) · [Funzioni e limiti](docs/FUNZIONI_INTEGRATE_IT.md).
+
+Il modulo opzionale **AmpySandbox** incorpora un APK release verificato della repository privata `Frak89/AmpybiOS` senza pubblicarne i sorgenti e senza cambiarne la firma. La catena `build_combined_cheetah.sh` → `sign_combined_release.sh` prepara i target-files e, su un host completo con chiavi persistenti, delega agli strumenti upstream la produzione di factory ZIP e OTA. L'audit verifica l'APK originale nei target-files e la firma factory.
+
+**Stato di questa integrazione: test host superati; APK nuovo, ROM e avvio hardware non verificati. Lo ZIP BuildKit contiene sorgenti, non firmware installabile.**

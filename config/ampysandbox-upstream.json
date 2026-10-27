@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "repository": "Frak89/AmpybiOS",
+  "git_url": "https://github.com/Frak89/AmpybiOS.git",
+  "source_sha": "6a5ad611c7658b8958578c0b5215ea74f1c1fb65",
+  "package_name": "io.ampy.bios",
+  "module": "AmpySandbox",
+  "app_version": "0.4.1",
+  "version_code": 5,
+  "gradle": "8.13",
+  "sdk": 37,
+  "ndk": "27.2.12479018",
+  "cmake": "3.22.1",
+  "python": "3.11",
+  "required_abi": "arm64-v8a",
+  "integration": "verified_presigned_product_app",
+  "enabled_by_default": false,
+  "private_source_policy": "Clone separately with the owner's Git credentials; never copy private sources or keys into this public repository.",
+  "source_tree_sha": "8e881be658e9f2335841adeeb7278fc4f4d8b5a6"
+}
